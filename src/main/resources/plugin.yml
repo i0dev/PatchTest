@@ -21,6 +21,9 @@ commands:
       - freeObby
     description: Opens an inventory full of obsidian.
     usage: /obby
+  shoot:
+    description: sssssssss
+    usage: /sss
 
 permissions:
   patchtest.create:

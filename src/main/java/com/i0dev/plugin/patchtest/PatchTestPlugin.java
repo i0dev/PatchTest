@@ -1,6 +1,7 @@
 package com.i0dev.plugin.patchtest;
 
 import com.i0dev.plugin.patchtest.command.CmdObby;
+import com.i0dev.plugin.patchtest.command.CmdShoot;
 import com.i0dev.plugin.patchtest.config.GeneralConfig;
 import com.i0dev.plugin.patchtest.config.MessageConfig;
 import com.i0dev.plugin.patchtest.command.CmdPatch;
@@ -50,6 +51,7 @@ public class PatchTestPlugin extends CorePlugin {
 
         // Commands
         registerCommand(CmdPatch.getInstance(), "patch");
+        registerCommand(CmdShoot.getInstance(), "shoot");
         registerCommand(CmdObby.getInstance(), "obby");
     }
 
