@@ -29,8 +29,10 @@ public class CannonManager extends AbstractManager {
     public void shootCannon(Location loc) {
         System.out.println("shooting at: " + loc);
         Location block = new Location(loc.getWorld(), loc.getBlockX(), loc.getBlockY() + 1, loc.getBlockZ());
+        Location block2 = new Location(loc.getWorld(), loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ());
         block.getBlock().setType(Material.BEDROCK);
         loc.getBlock().setType(Material.AIR);
+        block2.getBlock().setType(Material.AIR);
         final List<Entity> shot1 = new LinkedList<>(), shot2 = new LinkedList<>();
         org.bukkit.World world = loc.getWorld();
         Location tntloc = loc.clone().add(0.5, 0, 0.5);
