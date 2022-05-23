@@ -1,0 +1,40 @@
+plugins {
+    id 'java'
+    id "com.github.johnrengelman.shadow" version "7.1.2"
+}
+
+group 'com.i0dev.plugin.patchtest'
+version '1.0.0'
+
+repositories {
+    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { url 'https://hub.spigotmc.org/nexus/content/groups/public/' }
+    maven { url 'https://repo.extendedclip.com/content/repositories/placeholderapi/' }
+    maven { url 'https://jitpack.io' }
+    flatDir { dirs rootProject.rootDir.getPath() + '/../../../../Dependencies/Java/Bukkit/' }
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    // Change when using SQL
+    compileOnly 'com.zaxxer:HikariCP:4.0.3'
+    implementation 'com.google.code.gson:gson:2.9.0'
+
+    compileOnly 'me.clip:placeholderapi:2.11.1'
+    compileOnly 'com.github.MilkBowl:VaultAPI:1.7'
+    compileOnly 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    compileOnly name: 'WorldEdit-6.1.9'
+    compileOnly name: 'FastAsyncWorldEdit-#1282-1.8'
+    compileOnly name: 'craftbukkit-1.8.8-R0.1-SNAPSHOT-latest'
+
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+}
+
+shadowJar {
+    archiveBaseName.set(rootProject.getName())
+    archiveClassifier.set("")
+}
+
+
