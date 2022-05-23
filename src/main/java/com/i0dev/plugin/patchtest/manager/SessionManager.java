@@ -13,6 +13,9 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.*;
 
@@ -153,5 +156,49 @@ public class SessionManager extends AbstractManager {
 
         stopSession(session);
     }
+
+    @EventHandler
+    public void onKick(PlayerKickEvent e) {
+        onLeaveExecute(e.getPlayer());
+    }
+
+    @EventHandler
+    public void onLeave(PlayerQuitEvent e) {
+        onLeaveExecute(e.getPlayer());
+    }
+
+    public void onLeaveExecute(Player leftPlayer) {
+        if (!getInstance().isPlayerInSession(leftPlayer)) return;
+        PatchSession session = getInstance().getPlayersSession(leftPlayer);
+
+        if (session.getCreator().getUniqueId().equals(leftPlayer.getUniqueId())) {
+            if (session.getPlayers().size() > 1) {
+                Player newCreator = session.getPlayers().get(1);
+                session.setCreator(newCreator);
+                session.getPlayers().remove(leftPlayer);
+                session.getPlayers().forEach(player1 -> MsgUtil.msg(player1, PatchTestPlugin.getMsg("playerLoggedOfflineTransferLeader"),
+                        new Pair<>("{newPlayer}", newCreator.getName()),
+                        new Pair<>("{player}", leftPlayer.getName())));
+                MsgUtil.msg(newCreator, PatchTestPlugin.getMsg("youAreNewLeader"), new Pair<>("{player}", leftPlayer.getName()));
+            } else {
+                SessionManager.getInstance().stopSession(session);
+            }
+        } else {
+            session.getPlayers().remove(leftPlayer);
+        }
+        session.getRejoinList().add(leftPlayer.getUniqueId());
+        leftPlayer.setHealth(0);
+        session.getPlayers().forEach(player -> MsgUtil.msg(player, PatchTestPlugin.getMsg("playerLoggedOffline"), new Pair<>("{player}", leftPlayer.getName())));
+    }
+
+    public void onJoin(PlayerJoinEvent e) {
+        for (PatchSession session : sessions) {
+            if (session.getRejoinList().contains(e.getPlayer().getUniqueId())) {
+                MsgUtil.msg(e.getPlayer(), PatchTestPlugin.getMsg("rejoinLogin"));
+                return;
+            }
+        }
+    }
+
 
 }

@@ -7,12 +7,10 @@ import com.i0dev.plugin.patchtest.object.PatchSession;
 import com.i0dev.plugin.patchtest.template.AbstractManager;
 import com.i0dev.plugin.patchtest.utility.MsgUtil;
 import lombok.Getter;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 public class PlotManager extends AbstractManager {
@@ -42,7 +40,7 @@ public class PlotManager extends AbstractManager {
         int minX = (index * 240) + blocksBetweenPlots;
         int maxX = minX + 239;
 
-        return new PatchPlot(index, new Cuboid(minX, 1, 1, maxX, 255, 320, PatchTestPlugin.getPlugin().cnf().getString("patchWorldName")));
+        return new PatchPlot(index, new Cuboid(minX, 1, 1, maxX, 255, 224, PatchTestPlugin.getPlugin().cnf().getString("patchWorldName")));
     }
 
     @EventHandler
@@ -50,10 +48,11 @@ public class PlotManager extends AbstractManager {
         if (e.getFrom().getX() != e.getTo().getX() || e.getFrom().getZ() != e.getTo().getZ()) {
             if (!SessionManager.getInstance().isPlayerInSession(e.getPlayer())) return;
             PatchSession session = SessionManager.getInstance().getPlayersSession(e.getPlayer());
-            if (!session.isStarted()) return;
-            if (!session.getPlot().getAllowedMoveCuboid().contains(e.getTo())) {
-                e.getPlayer().teleport(session.getPlot().getTpLocation());
-                MsgUtil.msg(e.getPlayer(), PatchTestPlugin.getMsg("cantLeavePlotBoundaries"));
+            if (session.isStarted() || session.isInCountdown()) {
+                if (!session.getPlot().getAllowedMoveCuboid().contains(e.getTo())) {
+                    e.getPlayer().teleport(session.getPlot().getTpLocation());
+                    MsgUtil.msg(e.getPlayer(), PatchTestPlugin.getMsg("cantLeavePlotBoundaries"));
+                }
             }
         }
     }

@@ -100,6 +100,7 @@ public abstract class AbstractCommand implements CommandExecutor, TabExecutor {
                 "patch create",
                 "patch leave",
                 "patch start",
+                "patch rejoin",
                 "patch invite <player>",
                 "patch join <player>",
                 "patch remove <player>",

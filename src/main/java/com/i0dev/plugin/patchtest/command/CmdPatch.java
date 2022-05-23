@@ -47,6 +47,9 @@ public class CmdPatch extends AbstractCommand {
                 case "create":
                     create(sender, args);
                     break;
+                case "rejoin":
+                    rejoin(sender, args);
+                    break;
                 case "invite":
                     invite(sender, args);
                     break;
@@ -76,6 +79,29 @@ public class CmdPatch extends AbstractCommand {
         System.out.println("session:" + SessionManager.getInstance().getPlayersSession(((Player) sender)));
         System.out.println("plot:" + SessionManager.getInstance().getPlayersSession(((Player) sender)).getPlot());
     }
+
+    private void rejoin(CommandSender sender, String[] args) {
+        if (!hasPermission(sender, "rejoin")) {
+            MsgUtil.msg(sender, PatchTestPlugin.getMsg("noPermission"));
+            return;
+        }
+        if (!(sender instanceof Player)) {
+            MsgUtil.msg(sender, PatchTestPlugin.getMsg("cantRunAsConsole"));
+            return;
+        }
+        Player player = (Player) sender;
+        for (PatchSession session : SessionManager.getInstance().getSessions()) {
+            if (session.getRejoinList().contains(player.getUniqueId())) {
+                session.getRejoinList().remove(player.getUniqueId());
+                player.teleport(session.getPlot().getTpLocation());
+                session.getPlayers().add(player);
+                player.sendMessage("rejoined sesh");
+                // send to all that rejoin
+                return;
+            }
+        }
+    }
+
 
     private void tp(CommandSender sender, String[] args) {
         if (!hasPermission(sender, "tp")) {
@@ -344,7 +370,7 @@ public class CmdPatch extends AbstractCommand {
     @Override
     public List<String> tabComplete(CommandSender sender, String[] args) {
         if (args.length == 1)
-            return tabCompleteHelper(args[0], Arrays.asList("start", "invite", "leave", "create", "remove", "tp", "join", "reload", "help", "version"));
+            return tabCompleteHelper(args[0], Arrays.asList("start", "invite", "leave", "create", "rejoin", "remove", "tp", "join", "reload", "help", "version"));
         return blank;
     }
 }

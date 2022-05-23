@@ -47,14 +47,14 @@ public class Cuboid {
     }
 
     public double getXCenter() {
-        return getXRange() / 2;
+        return getXMin() + getXRange() / 2;
     }
 
     public double getYCenter() {
-        return getYRange() / 2;
+        return getYMin() + getYRange() / 2;
     }
 
     public double getZCenter() {
-        return getZRange() / 2;
+        return getYMin() + getZRange() / 2;
     }
 }

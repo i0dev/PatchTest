@@ -11,10 +11,9 @@ import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
-import javax.sound.midi.Patch;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -36,6 +35,11 @@ PatchSession {
     private BukkitTask countdown;
     private BukkitTask create;
     private long startTime;
+    private boolean inCountdown;
+
+    private List<UUID> rejoinList;
+
+    private boolean firstShot;
 
 
     public PatchSession(Player creator) {
@@ -51,6 +55,7 @@ PatchSession {
         lastCountdownMessageSent = 0;
         currentShootingLocation = plot.getDefaultShootLocation();
         uuid = UUID.randomUUID();
+        firstShot = true;
         newAdjustTime();
     }
 
@@ -69,15 +74,18 @@ PatchSession {
                 currentShootingLocation = getMostEfficientLocation();
                 lastAdjustTime = System.currentTimeMillis();
                 newAdjustTime();
+                System.out.println("Adjusted to: " + currentShootingLocation);
             }
             CannonManager.getInstance().shootCannon(currentShootingLocation);
             lastShotTime = System.currentTimeMillis();
+            this.firstShot = false;
         }
     };
     private long startedCountdownTime;
     private long lastCountdownMessageSent;
     public Runnable taskCountdown = () -> {
         if (started) return;
+        inCountdown = true;
         int countdownLengthSeconds = PatchTestPlugin.getPlugin().cnf().getInt("countdownLengthSeconds");
         if (System.currentTimeMillis() >= lastCountdownMessageSent * 1000L) {
             SimpleConfig cnf = PatchTestPlugin.getPlugin().cnf();
@@ -89,6 +97,8 @@ PatchSession {
                 shoot = Bukkit.getScheduler().runTaskTimer(PatchTestPlugin.getPlugin(), taskShoot, 20L, 20L);
                 started = true;
                 startTime = System.currentTimeMillis();
+                this.lastAdjustTime = System.currentTimeMillis();
+                inCountdown = false;
                 Bukkit.getScheduler().runTask(PatchTestPlugin.getPlugin(), () -> players.forEach(player -> PatchTestPlugin.getPlugin().getServer().dispatchCommand(Bukkit.getConsoleSender(), "kit " + PatchTestPlugin.getPlugin().cnf().get("patchKitName") + " " + player.getName())));
                 countdown.cancel();
             } else {
@@ -115,13 +125,15 @@ PatchSession {
     }
 
     public Location getMostEfficientLocation() {
+        if (firstShot) return plot.getDefaultShootLocation();
         List<Location> frontWallBlocks = new ArrayList<>();
         Cuboid walls = getPlot().getWallsCuboid();
-        for (int y = (int) walls.getYMin(); y < walls.getYMax(); y++) {
+        for (int y = 150; y < walls.getYMax(); y++) {
             for (int x = (int) walls.getXMin(); x < walls.getXMax(); x++) {
-                frontWallBlocks.add(new Location(Bukkit.getWorld(PatchTestPlugin.getPlugin().cnf().getString("patchWorldName")), x, y, getPlot().getZShootCoordinate()));
+                frontWallBlocks.add(new Location(Bukkit.getWorld(PatchTestPlugin.getPlugin().cnf().getString("patchWorldName")), x, y, getPlot().getWallsCuboid().getZMax()));
             }
         }
+        Collections.shuffle(frontWallBlocks);
 
         int longestHole = 0;
         Location farthestLocation = plot.getDefaultShootLocation();
@@ -139,6 +151,7 @@ PatchSession {
                 farthestLocation = frontWallBlock;
             }
         }
+        farthestLocation.setZ(plot.getZShootCoordinate());
         return farthestLocation;
     }
 
@@ -148,4 +161,6 @@ PatchSession {
         }
         return false;
     }
+
+
 }

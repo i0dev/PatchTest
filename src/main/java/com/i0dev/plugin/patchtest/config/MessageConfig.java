@@ -94,6 +94,11 @@ public class MessageConfig extends AbstractConfiguration {
                 ""
         ));
 
+        config.set("playerLoggedOffline", "&c{player}&7 has logged offline, they were removed from the session but can rejoin at any time.");
+        config.set("playerLoggedOfflineTransferLeader", "&c{player}&7 has logged offline. Leader has been transferred to &c{newPlayer}&7.");
+        config.set("yourNewLeaderOldLogOff", "&7You have been transferred leadership of this session because &c{player}&7 has logged offline.");
+        config.set("rejoinLogin", "&7You can still join back on the session you were in when you logged offline. Type &c/patch rejoin &7to rejoin.");
+        config.set("noRejoin", "&7You are not in any sessions where you can rejoin.");
 
     }
 }
