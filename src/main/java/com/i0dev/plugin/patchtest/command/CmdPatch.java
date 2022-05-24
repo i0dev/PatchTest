@@ -8,17 +8,8 @@ import com.i0dev.plugin.patchtest.object.PatchSession;
 import com.i0dev.plugin.patchtest.template.AbstractCommand;
 import com.i0dev.plugin.patchtest.utility.MsgUtil;
 import lombok.Getter;
-import lombok.Setter;
-import net.minecraft.server.v1_8_R3.EntityFallingBlock;
-import net.minecraft.server.v1_8_R3.EntityTNTPrimed;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_8_R3.CraftServer;
-import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftFallingSand;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftTNTPrimed;
 import org.bukkit.entity.*;
 
 import java.util.*;
@@ -155,7 +146,7 @@ public class CmdPatch extends AbstractCommand {
                 MsgUtil.msg(newCreator, PatchTestPlugin.getMsg("youAreNewLeader"), new Pair<>("{player}", player.getName()));
                 player.setHealth(0);
             } else {
-                SessionManager.getInstance().stopSession(session);
+                session.stop();
                 MsgUtil.msg(sender, PatchTestPlugin.getMsg("leftCurrentSessionAndDelete"));
             }
 

@@ -3,11 +3,16 @@ package com.i0dev.plugin.patchtest.object;
 import com.i0dev.plugin.patchtest.PatchTestPlugin;
 import com.i0dev.plugin.patchtest.manager.CannonManager;
 import com.i0dev.plugin.patchtest.manager.PlotManager;
+import com.i0dev.plugin.patchtest.manager.SessionManager;
+import com.i0dev.plugin.patchtest.utility.MsgUtil;
+import com.i0dev.plugin.patchtest.utility.TimeUtil;
 import com.i0dev.plugin.patchtest.utility.TitleUtil;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.bukkit.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -162,5 +167,40 @@ PatchSession {
         return false;
     }
 
+    public void endSessionLose() {
+        getPlayers().forEach(player -> {
+            player.setHealth(0);
+            MsgUtil.msg(player, PatchTestPlugin.getPlugin().msg().getStringList("lostSession"), new Pair<>("{time}", TimeUtil.formatTimePeriod(System.currentTimeMillis() - getStartTime())));
+        });
+
+        stop();
+    }
+
+
+    public void cancelTasks() {
+        getPlayers().forEach(player -> player.setHealth(0));
+        if (getCountdown() != null)
+            getCountdown().cancel();
+        if (getCreate() != null)
+            getCreate().cancel();
+        if (getShoot() != null)
+            getShoot().cancel();
+    }
+
+    public void stop() {
+        cancelTasks();
+        killMobs();
+        SessionManager.getInstance().remove(getUuid());
+    }
+
+    public void killMobs() {
+        for (Entity entity : Bukkit.getWorld(PatchTestPlugin.getPlugin().cnf().getString("patchWorldName")).getNearbyEntities(getPlot().getPlotCuboid().getCenter(), 500, 500, 500)) {
+            if (!(entity instanceof LivingEntity))
+                continue;
+            LivingEntity mob = ((LivingEntity) entity);
+            if (getPlot().getAllowedMoveCuboid().contains(mob.getLocation()))
+                mob.setHealth(0);
+        }
+    }
 
 }
