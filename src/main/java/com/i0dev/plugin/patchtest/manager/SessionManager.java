@@ -27,15 +27,6 @@ public class SessionManager extends AbstractManager {
         setListener(true);
     }
 
-    public boolean isPlayerInSession(Player player) {
-        for (PatchSession session : sessions) {
-            for (Player sessionPlayer : session.getPlayers()) {
-                if (sessionPlayer.getUniqueId().equals(player.getUniqueId())) return true;
-            }
-        }
-        return false;
-    }
-
     public boolean isPlotLocationTaken(int index) {
         for (PatchSession session : sessions) {
             if (session.getPlot().getPlotIndex() == index) return true;
@@ -58,15 +49,7 @@ public class SessionManager extends AbstractManager {
         sessions.add(session);
     }
 
-
-    public boolean isPlayerCreator(Player player) {
-        for (PatchSession session : sessions) {
-            if (session.getCreator().getUniqueId().equals(player.getUniqueId())) return true;
-        }
-        return false;
-    }
-
-    public PatchSession getPlayersSession(Player player) {
+    public PatchSession getSession(Player player) {
         for (PatchSession session : sessions) {
             for (Player sessionPlayer : session.getPlayers()) {
                 if (sessionPlayer.getUniqueId().equals(player.getUniqueId())) return session;
@@ -126,8 +109,8 @@ public class SessionManager extends AbstractManager {
     }
 
     public void onLeaveExecute(Player leftPlayer) {
-        if (!getInstance().isPlayerInSession(leftPlayer)) return;
-        PatchSession session = getInstance().getPlayersSession(leftPlayer);
+        PatchSession session = getInstance().getSession(leftPlayer);
+        if (session == null) return;
 
         if (session.getCreator().getUniqueId().equals(leftPlayer.getUniqueId())) {
             if (session.getPlayers().size() > 1) {

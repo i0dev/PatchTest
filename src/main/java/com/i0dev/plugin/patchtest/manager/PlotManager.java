@@ -46,8 +46,8 @@ public class PlotManager extends AbstractManager {
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent e) {
         if (e.getFrom().getX() != e.getTo().getX() || e.getFrom().getZ() != e.getTo().getZ()) {
-            if (!SessionManager.getInstance().isPlayerInSession(e.getPlayer())) return;
-            PatchSession session = SessionManager.getInstance().getPlayersSession(e.getPlayer());
+            PatchSession session = SessionManager.getInstance().getSession(e.getPlayer());
+            if (session == null) return;
             if (session.isStarted() || session.isInCountdown()) {
                 if (!session.getPlot().getAllowedMoveCuboid().contains(e.getTo())) {
                     e.getPlayer().teleport(session.getPlot().getTpLocation());
@@ -60,18 +60,13 @@ public class PlotManager extends AbstractManager {
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent e) {
         if (e.getPlayer().hasPermission(PatchTestPlugin.PERMISSION_PREFIX + ".admin")) return;
-        if (SessionManager.getInstance().isPlayerInSession(e.getPlayer())) {
-            PatchSession session = SessionManager.getInstance().getPlayersSession(e.getPlayer());
-            if (!session.isStarted()) {
-                MsgUtil.msg(e.getPlayer(), PatchTestPlugin.getMsg("waitForSessionToStartToPlaceBlocks"));
-                e.setCancelled(true);
-                return;
-            }
-            if (!session.getPlot().getAllowedMoveCuboid().contains(e.getBlock().getLocation())) {
-                MsgUtil.msg(e.getPlayer(), PatchTestPlugin.getMsg("cantPlaceBlocksOutsidePlot"));
-                e.setCancelled(true);
-            }
-        } else {
+        PatchSession session = SessionManager.getInstance().getSession(e.getPlayer());
+        if (session == null) return;
+        if (!session.isStarted()) {
+            MsgUtil.msg(e.getPlayer(), PatchTestPlugin.getMsg("waitForSessionToStartToPlaceBlocks"));
+            e.setCancelled(true);
+
+        } else if (!session.getPlot().getAllowedMoveCuboid().contains(e.getBlock().getLocation())) {
             MsgUtil.msg(e.getPlayer(), PatchTestPlugin.getMsg("cantPlaceBlocksOutsidePlot"));
             e.setCancelled(true);
         }
@@ -80,21 +75,16 @@ public class PlotManager extends AbstractManager {
     @EventHandler
     public void onBlockBreak(BlockBreakEvent e) {
         if (e.getPlayer().hasPermission(PatchTestPlugin.PERMISSION_PREFIX + ".admin")) return;
-        if (SessionManager.getInstance().isPlayerInSession(e.getPlayer())) {
-            PatchSession session = SessionManager.getInstance().getPlayersSession(e.getPlayer());
-            if (!session.isStarted()) {
-                MsgUtil.msg(e.getPlayer(), PatchTestPlugin.getMsg("waitForSessionToStartToBreakBlocks"));
-                e.setCancelled(true);
-                return;
-            }
-            if (!session.getPlot().getAllowedMoveCuboid().contains(e.getBlock().getLocation())) {
-                MsgUtil.msg(e.getPlayer(), PatchTestPlugin.getMsg("cantPlaceBlocksOutsidePlot"));
-                e.setCancelled(true);
-            }
-        } else {
+        PatchSession session = SessionManager.getInstance().getSession(e.getPlayer());
+        if (session == null) return;
+        if (!session.isStarted()) {
+            MsgUtil.msg(e.getPlayer(), PatchTestPlugin.getMsg("waitForSessionToStartToBreakBlocks"));
+            e.setCancelled(true);
+        } else if (!session.getPlot().getAllowedMoveCuboid().contains(e.getBlock().getLocation())) {
             MsgUtil.msg(e.getPlayer(), PatchTestPlugin.getMsg("cantPlaceBlocksOutsidePlot"));
             e.setCancelled(true);
         }
+
     }
 
 //    @EventHandler

@@ -10,9 +10,10 @@ import com.i0dev.plugin.patchtest.utility.MsgUtil;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 
 public class CmdPatch extends AbstractCommand {
 
@@ -67,8 +68,8 @@ public class CmdPatch extends AbstractCommand {
     }
 
     private void debug(CommandSender sender, String[] args) {
-        System.out.println("session:" + SessionManager.getInstance().getPlayersSession(((Player) sender)));
-        System.out.println("plot:" + SessionManager.getInstance().getPlayersSession(((Player) sender)).getPlot());
+        System.out.println("session:" + SessionManager.getInstance().getSession(((Player) sender)));
+        System.out.println("plot:" + SessionManager.getInstance().getSession(((Player) sender)).getPlot());
     }
 
     private void rejoin(CommandSender sender, String[] args) {
@@ -104,11 +105,12 @@ public class CmdPatch extends AbstractCommand {
             return;
         }
         Player player = (Player) sender;
-        if (!SessionManager.getInstance().isPlayerInSession(player)) {
+        PatchSession session = SessionManager.getInstance().getSession(player);
+
+        if (session == null) {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("notInSession"));
             return;
         }
-        PatchSession session = SessionManager.getInstance().getPlayersSession(player);
         if (!session.isStarted()) {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("cantTeleportUntilStarted"));
             return;
@@ -128,13 +130,14 @@ public class CmdPatch extends AbstractCommand {
             return;
         }
         Player player = (Player) sender;
-        if (!SessionManager.getInstance().isPlayerInSession(player)) {
+        PatchSession session = SessionManager.getInstance().getSession(player);
+
+        if (session == null) {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("notInSession"));
             return;
         }
-        PatchSession session = SessionManager.getInstance().getPlayersSession(player);
 
-        if (SessionManager.getInstance().isPlayerCreator(player)) {
+        if (session.getCreator().getUniqueId().equals(player.getUniqueId())) {
             if (session.getPlayers().size() > 1) {
                 Player newCreator = session.getPlayers().get(1);
                 session.setCreator(newCreator);
@@ -170,16 +173,17 @@ public class CmdPatch extends AbstractCommand {
             return;
         }
         Player player = (Player) sender;
-        if (!SessionManager.getInstance().isPlayerInSession(player)) {
+        PatchSession session = SessionManager.getInstance().getSession(player);
+
+        if (session == null) {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("notInSession"));
             return;
         }
-        if (!SessionManager.getInstance().isPlayerCreator(player)) {
+        if (!session.getCreator().getUniqueId().equals(player.getUniqueId())) {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("onlyCreatorCanStart"));
             return;
         }
 
-        PatchSession session = SessionManager.getInstance().getPlayersSession(player);
         session.start();
         MsgUtil.msg(sender, PatchTestPlugin.getMsg("startedSession"));
 
@@ -197,8 +201,9 @@ public class CmdPatch extends AbstractCommand {
             return;
         }
         Player player = (Player) sender;
+        PatchSession session = new PatchSession(player);
 
-        if (SessionManager.getInstance().isPlayerInSession(player)) {
+        if (session == null) {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("alreadyInSession"));
             return;
         }
@@ -208,7 +213,6 @@ public class CmdPatch extends AbstractCommand {
             return;
         }
 
-        PatchSession session = new PatchSession(player);
         SessionManager.getInstance().add(session);
         MsgUtil.msg(sender, PatchTestPlugin.getPlugin().msg().getStringList("newPatchSession"));
     }
@@ -238,7 +242,7 @@ public class CmdPatch extends AbstractCommand {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("noInvite"), new Pair<>("{player}", creator.getName()));
             return;
         }
-        PatchSession session = SessionManager.getInstance().getPlayersSession(creator);
+        PatchSession session = SessionManager.getInstance().getSession(creator);
 
         if (!session.isInviteAllowed()) {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("sessionAlreadyStarted"));
@@ -271,24 +275,24 @@ public class CmdPatch extends AbstractCommand {
         }
 
         Player player = (Player) sender;
-        if (!SessionManager.getInstance().isPlayerInSession(player)) {
+        PatchSession session = SessionManager.getInstance().getSession(player);
+        if (session == null) {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("notInSession"));
             return;
         }
 
-        if (!SessionManager.getInstance().isPlayerCreator(player)) {
+        if (!session.getCreator().getUniqueId().equals(player.getUniqueId())) {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("onlyCreatorCanInvite"));
             return;
         }
 
-        PatchSession session = SessionManager.getInstance().getPlayersSession(player);
 
         if (session.containsPlayer(toAdd)) {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("playerAlreadyInSession"), new Pair<>("{player}", toAdd.getName()));
             return;
         }
 
-        if (SessionManager.getInstance().getPlayersSession(toAdd) != null) {
+        if (SessionManager.getInstance().getSession(toAdd) != null) {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("inAnotherSession"), new Pair<>("{player}", toAdd.getName()));
             return;
         }
@@ -329,17 +333,17 @@ public class CmdPatch extends AbstractCommand {
         }
 
         Player player = (Player) sender;
-        if (!SessionManager.getInstance().isPlayerInSession(player)) {
+        PatchSession session = SessionManager.getInstance().getSession(player);
+        if (session == null) {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("notInSession"));
             return;
         }
 
-        if (!SessionManager.getInstance().isPlayerCreator(player)) {
+        if (!session.getCreator().getUniqueId().equals(player.getUniqueId())) {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("onlyCreatorCanRemove"));
             return;
         }
 
-        PatchSession session = SessionManager.getInstance().getPlayersSession(player);
 
         if (!session.containsPlayer(toRemove)) {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("cantRemoveNotInSession"), new Pair<>("{player}", toRemove.getName()));
