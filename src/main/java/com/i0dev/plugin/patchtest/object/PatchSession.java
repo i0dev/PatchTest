@@ -129,6 +129,10 @@ PatchSession {
         create = Bukkit.getScheduler().runTaskAsynchronously(PatchTestPlugin.getPlugin(), taskCreate);
     }
 
+    public boolean isCreator(Player player) {
+        return getCreator().getUniqueId().equals(player.getUniqueId());
+    }
+
     public Location getMostEfficientLocation() {
         if (firstShot) return plot.getDefaultShootLocation();
         List<Location> frontWallBlocks = new ArrayList<>();
