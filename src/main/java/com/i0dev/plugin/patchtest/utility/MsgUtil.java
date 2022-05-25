@@ -15,60 +15,142 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * A messaging utility class to send messages to players.
+ *
+ * @author Andrew magnuson
+ */
 public class MsgUtil {
 
-    public static String color(String s) {
-        return translateHexColorCodes(ChatColor.translateAlternateColorCodes('&', s));
+    /**
+     * Formats the string passed through and translates the color codes & any hex codes present.
+     *
+     * @param string The string to format colors for
+     * @return The formatted string with color codes translated
+     */
+    public static String color(String string) {
+        return translateHexColorCodes(ChatColor.translateAlternateColorCodes('&', string));
     }
 
-    public static List<String> color(List<String> ss) {
+    /**
+     * Formats each string in the list passed through, works the same as the above method
+     *
+     * @param stringList The list of strings that need to be formatted
+     * @return The formatted list of strings with color codes translated
+     */
+    public static List<String> color(List<String> stringList) {
         List<String> ret = new ArrayList<>();
-        ss.forEach(s -> ret.add(color(s)));
+        stringList.forEach(s -> ret.add(color(s)));
         return ret;
     }
 
-    public static String papi(CommandSender sender, String s) {
-        if (!PatchTestPlugin.getPlugin().isHookEnabled("papi") || !(sender instanceof Player)) return s;
-        return PatchTestPlugin.getPlugin().getHook(PlaceholderAPIHook.class).replace((Player) sender, s);
+    /**
+     * Uses the Placeholder API plugin to replace any placeholders in the string.
+     * If sender is not a {@link Player} then it will not perform any formatting.
+     * The placeholder hook must be enabled in the startup() method of the plugin for formatting to occur.
+     *
+     * @param sender The sender to replace placeholders with
+     * @param string The string to replace placeholders in
+     * @return A String with the placeholders replaced if applicable
+     */
+    public static String papi(CommandSender sender, String string) {
+        if (!PatchTestPlugin.getPlugin().isHookEnabled("papi") || !(sender instanceof Player)) return string;
+        return PatchTestPlugin.getPlugin().getHook(PlaceholderAPIHook.class).replace((Player) sender, string);
     }
 
-    public static String full(CommandSender sender, String msg, Pair<String, String>... pairs) {
-        return color(papi(sender, pair(msg, pairs)));
-    }
-
-    public static String pair(String msg, Pair<String, String>... pairs) {
+    /**
+     * Will replace the msg with the pairs passed through.
+     * The pairs will act as placeholders, replacing all instances of the first value of the pair with the second
+     *
+     * @param string The string to replace
+     * @param pairs  A list of pairs to replace with.
+     * @return A formatted string from the pairs passed through.
+     */
+    public static String pair(String string, Pair<String, String>... pairs) {
         for (Pair<String, String> pair : pairs) {
-            msg = msg.replace(pair.getKey(), pair.getValue());
+            string = string.replace(pair.getKey(), pair.getValue());
         }
-        return msg;
+        return string;
     }
 
+    /**
+     * Sends a message to the specified {@link CommandSender}
+     * - Formats color
+     * - Formats with Placeholder API
+     * - Formats with {@link Pair} placeholders
+     *
+     * @param sender  The {@link CommandSender} to message
+     * @param message the message to send
+     * @param pairs   {@link Pair} placeholders to format
+     */
     @SafeVarargs
-    public static void msg(CommandSender sender, String msg, Pair<String, String>... pairs) {
-        sender.sendMessage(color(papi(sender, pair(msg, pairs))));
+    public static void msg(CommandSender sender, String message, Pair<String, String>... pairs) {
+        sender.sendMessage(color(papi(sender, pair(message, pairs))));
     }
 
+
+    /**
+     * Sends multiple messages to the specified {@link CommandSender}
+     * - Formats color
+     * - Formats with Placeholder API
+     * - Formats with {@link Pair} placeholders
+     *
+     * @param sender   The {@link CommandSender} to message
+     * @param messages the messages to send
+     * @param pairs    {@link Pair} placeholders to format
+     */
     @SafeVarargs
-    public static void msg(CommandSender sender, Collection<String> msg, Pair<String, String>... pairs) {
-        msg.forEach(s -> sender.sendMessage(color(papi(sender, pair(s, pairs)))));
+    public static void msg(CommandSender sender, Collection<String> messages, Pair<String, String>... pairs) {
+        messages.forEach(s -> sender.sendMessage(color(papi(sender, pair(s, pairs)))));
     }
 
+    /**
+     * Sends a message to every player on the server.
+     * - Formats color
+     * - Formats with Placeholder API
+     * - Formats with {@link Pair} placeholders
+     *
+     * @param message the message to send
+     * @param pairs   {@link Pair} placeholders to format
+     */
     @SafeVarargs
-    public static void msgAll(String msg, Pair<String, String>... pairs) {
-        Bukkit.getOnlinePlayers().forEach(player -> player.sendMessage(color(papi(player, pair(msg, pairs)))));
+    public static void msgAll(String message, Pair<String, String>... pairs) {
+        Bukkit.getOnlinePlayers().forEach(player -> player.sendMessage(color(papi(player, pair(message, pairs)))));
     }
 
+    /**
+     * Sends multiple messages to every player on the server.
+     * - Formats color
+     * - Formats with Placeholder API
+     * - Formats with {@link Pair} placeholders
+     *
+     * @param messages the messages to send
+     * @param pairs    {@link Pair} placeholders to format
+     */
     @SafeVarargs
-    public static void msgAll(Collection<String> msg, Pair<String, String>... pairs) {
-        msg.forEach(s -> Bukkit.getOnlinePlayers().forEach(player -> player.sendMessage(color(papi(player, pair(s, pairs))))));
+    public static void msgAll(Collection<String> messages, Pair<String, String>... pairs) {
+        messages.forEach(s -> Bukkit.getOnlinePlayers().forEach(player -> player.sendMessage(color(papi(player, pair(s, pairs))))));
     }
 
-    public static Player getPlayer(String s) {
-        if (s.length() > 20)
-            return Bukkit.getPlayer(UUID.fromString(s));
-        return Bukkit.getPlayer(s);
+    /**
+     * Parses a player from the specified string.
+     * If the string is longer than 16 characters it will consider it as an uuid & parse it as one
+     *
+     * @param string The {@link String} to parse from
+     * @return a player if found. null if not
+     */
+    public static Player getPlayer(String string) {
+        if (string.length() > 16)
+            return Bukkit.getPlayer(UUID.fromString(string));
+        return Bukkit.getPlayer(string);
     }
 
+    /**
+     * Translates a message with new hex colors
+     *
+     * @param message The message to format
+     * @return A formatted string
+     */
     public static String translateHexColorCodes(String message) {
         Pattern hexPattern = Pattern.compile("&#([A-Fa-f0-9]{6})");
         char colorChar = ChatColor.COLOR_CHAR;

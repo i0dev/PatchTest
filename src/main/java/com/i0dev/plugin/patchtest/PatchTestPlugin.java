@@ -60,10 +60,19 @@ public class PatchTestPlugin extends CorePlugin {
 
     }
 
+    /**
+     * @return The world name for all patch test interactions, defined in config.
+     */
     public static String getWorldName() {
         return PatchTestPlugin.getPlugin().cnf().getString("patchWorldName");
     }
 
+    /**
+     * Gets a message directly from the messaging config
+     *
+     * @param path The path of the message.
+     * @return The message that corresponds to the specified path.
+     */
     public static String getMsg(String path) {
         return PatchTestPlugin.getPlugin().msg().getString(path);
     }

@@ -1,44 +1,36 @@
 package com.i0dev.plugin.patchtest.utility;
 
-import me.clip.placeholderapi.util.Msg;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+/**
+ * A utility class for sending titles to players.
+ * <p>
+ * Credit to EmberCM for these methods
+ */
 public class TitleUtil {
 
-    public static Class<?> getOBCClass(String name) {
-        try {
-            return Class.forName("org.bukkit.craftbukkit."
-                    + Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3] + "." + name);
-        } catch (ClassNotFoundException e) {
-            return null;
-        }
-    }
 
-    public static Class<?> getNMSClass(String name) {
-        try {
-            return Class.forName(
-                    "net.minecraft.server." + Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3] + "." + name);
-        } catch (ClassNotFoundException e) {
-            return null;
-        }
-    }
-
-    public static Class<?> getNMSClass(String name, String def) {
-        return getNMSClass(name) != null ? getNMSClass(name) : getNMSClass(def.split("\\.")[0]).getDeclaredClasses()[0];
-    }
-
+    /**
+     * Sends a title to the specified player.
+     *
+     * @param player   The player to send the title to
+     * @param fadeIn   Ticks to spend on the fade in animation
+     * @param stay     Ticks to stay on screen
+     * @param fadeOut  Ticks to spend on the fade out animation
+     * @param title    The title to send
+     * @param subtitle The subtitle to send
+     */
     public static void sendTitle(Player player, Integer fadeIn, Integer stay, Integer fadeOut, String title, String subtitle) {
         try {
-            Object entity = getOBCClass("entity.CraftPlayer").cast(player);
+            Object entity = NMSUtil.getOBCClass("entity.CraftPlayer").cast(player);
             Object handle = entity.getClass().getMethod("getHandle").invoke(entity);
             Object connection = handle.getClass().getField("playerConnection").get(handle);
-            Class<?> enumClass = getNMSClass("EnumTitleAction", "PacketPlayOutTitle.EnumTitleAction");
-            Object cbc = getNMSClass("IChatBaseComponent").getDeclaredClasses().length != 0 ? getNMSClass("IChatBaseComponent").getDeclaredClasses()[0].getDeclaredMethod("a", String.class).invoke(null, "") : null;
-            Object packet = getNMSClass("PacketPlayOutTitle")
-                    .getConstructor(enumClass, getNMSClass("IChatBaseComponent"), int.class, int.class, int.class)
+            Class<?> enumClass = NMSUtil.getNMSClass("EnumTitleAction", "PacketPlayOutTitle.EnumTitleAction");
+            Object cbc = NMSUtil.getNMSClass("IChatBaseComponent").getDeclaredClasses().length != 0 ? NMSUtil.getNMSClass("IChatBaseComponent").getDeclaredClasses()[0].getDeclaredMethod("a", String.class).invoke(null, "") : null;
+            Object packet = NMSUtil.getNMSClass("PacketPlayOutTitle")
+                    .getConstructor(enumClass, NMSUtil.getNMSClass("IChatBaseComponent"), int.class, int.class, int.class)
                     .newInstance(enumClass.getDeclaredMethod("a", String.class).invoke(null, "TIMES"), cbc, fadeIn, stay, fadeOut);
-            connection.getClass().getMethod("sendPacket", getNMSClass("Packet")).invoke(connection, packet);
+            connection.getClass().getMethod("sendPacket", NMSUtil.getNMSClass("Packet")).invoke(connection, packet);
             sendPacket(player, title, "TITLE", connection, enumClass);
             sendPacket(player, subtitle, "SUBTITLE", connection, enumClass);
         } catch (Exception ex) {
@@ -50,12 +42,22 @@ public class TitleUtil {
         }
     }
 
+    /**
+     * Sends the packet off to the player, acts as a utility for sendTitle() method above.
+     *
+     * @param player     The player to send the packet to
+     * @param text       The text to send
+     * @param type       The text type to send
+     * @param connection The connection to the player
+     * @param enumClass  The enum class of the title action
+     * @throws Exception if it fails to send the packet
+     */
     private static void sendPacket(Player player, String text, String type, Object connection, Class<?> enumClass) throws Exception {
         text = "{\"text\": \"" + MsgUtil.color(text.replaceAll("%player%", player.getDisplayName())) + "\"}";
-        Object json = getNMSClass("ChatSerializer", "IChatBaseComponent.ChatSerializer").getMethod("a", String.class).invoke(null, text);
-        Object titlePacket = getNMSClass("PacketPlayOutTitle").getConstructor(enumClass, getNMSClass("IChatBaseComponent"))
+        Object json = NMSUtil.getNMSClass("ChatSerializer", "IChatBaseComponent.ChatSerializer").getMethod("a", String.class).invoke(null, text);
+        Object titlePacket = NMSUtil.getNMSClass("PacketPlayOutTitle").getConstructor(enumClass, NMSUtil.getNMSClass("IChatBaseComponent"))
                 .newInstance(enumClass.getDeclaredMethod("a", String.class).invoke(null, type), json);
-        connection.getClass().getMethod("sendPacket", getNMSClass("Packet")).invoke(connection, titlePacket);
+        connection.getClass().getMethod("sendPacket", NMSUtil.getNMSClass("Packet")).invoke(connection, titlePacket);
     }
 
 }
