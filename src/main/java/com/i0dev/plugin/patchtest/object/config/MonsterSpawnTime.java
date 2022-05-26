@@ -14,7 +14,7 @@ import java.util.*;
 @AllArgsConstructor
 public class MonsterSpawnTime implements SerializableConfig {
 
-    Map<Long, Integer> times;
+    Map<Integer, Integer> times;
     String customName;
     EntityType entityType;
     int health;
@@ -47,7 +47,7 @@ public class MonsterSpawnTime implements SerializableConfig {
     public MonsterSpawnTime(Map<String, Object> map) {
         times = new LinkedHashMap<>();
         for (Map.Entry<Number, Integer> num : ((Map<Number, Integer>) map.get("times")).entrySet()) {
-            times.put(Long.parseLong(num.getKey() + ""), num.getValue());
+            times.put(Integer.parseInt(num.getKey() + ""), num.getValue());
         }
         this.customName = (String) map.get("customName");
         this.entityType = EntityType.valueOf((String) map.get("entityType"));

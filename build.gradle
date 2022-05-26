@@ -28,6 +28,7 @@ dependencies {
     compileOnly name: 'WorldEdit-6.1.9'
     compileOnly name: 'FastAsyncWorldEdit-#1282-1.8'
     compileOnly name: 'craftbukkit-1.8.8-R0.1-SNAPSHOT-latest'
+    compileOnly name: 'NBTAPI'
 
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
 }

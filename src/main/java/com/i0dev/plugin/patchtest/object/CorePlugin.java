@@ -8,19 +8,13 @@ import com.i0dev.plugin.patchtest.template.AbstractCommand;
 import com.i0dev.plugin.patchtest.template.AbstractConfiguration;
 import com.i0dev.plugin.patchtest.template.AbstractHook;
 import com.i0dev.plugin.patchtest.template.AbstractManager;
+import lombok.Getter;
 import lombok.SneakyThrows;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.*;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public abstract class CorePlugin extends JavaPlugin {
 
@@ -28,6 +22,8 @@ public abstract class CorePlugin extends JavaPlugin {
     Set<AbstractManager> managers = new HashSet<>();
     Set<AbstractCommand> commands = new HashSet<>();
     Set<AbstractHook> hooks = new HashSet<>();
+    @Getter
+    public List<String> commandsForHelp = new ArrayList<>();
 
     @Override
     public void onEnable() {
@@ -37,6 +33,10 @@ public abstract class CorePlugin extends JavaPlugin {
     }
 
     public abstract void startup();
+
+    protected void setCommandsForHelp(String... commands) {
+        commandsForHelp.addAll(Arrays.asList(commands));
+    }
 
     @Override
     public void onDisable() {
@@ -49,7 +49,9 @@ public abstract class CorePlugin extends JavaPlugin {
         System.out.println("\u001B[31m" + getDescription().getName() + " by: " + getDescription().getAuthors().get(0) + " has been disabled.");
     }
 
-    public abstract void shutdown();
+    public void shutdown() {
+
+    }
 
     public void registerManager(AbstractManager manager) {
         if (manager.isLoaded()) manager.deinitialize();

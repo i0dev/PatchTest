@@ -1,10 +1,12 @@
 package com.i0dev.plugin.patchtest.command;
 
 import com.i0dev.plugin.patchtest.PatchTestPlugin;
+import com.i0dev.plugin.patchtest.manager.InventoryManager;
 import com.i0dev.plugin.patchtest.manager.PlotManager;
 import com.i0dev.plugin.patchtest.manager.SessionManager;
 import com.i0dev.plugin.patchtest.object.Pair;
 import com.i0dev.plugin.patchtest.object.PatchSession;
+import com.i0dev.plugin.patchtest.object.TeamSize;
 import com.i0dev.plugin.patchtest.template.AbstractCommand;
 import com.i0dev.plugin.patchtest.utility.MsgUtil;
 import lombok.Getter;
@@ -19,6 +21,7 @@ public class CmdPatch extends AbstractCommand {
 
     @Getter
     public static final CmdPatch instance = new CmdPatch();
+
 
     @Override
     public void execute(CommandSender sender, String[] args) {
@@ -184,6 +187,12 @@ public class CmdPatch extends AbstractCommand {
             return;
         }
 
+        if (session.isStarted() || session.isInCountdown()) {
+            MsgUtil.msg(sender, PatchTestPlugin.getMsg("alreadyStartedSession"));
+
+            return;
+        }
+
         session.start();
         MsgUtil.msg(sender, PatchTestPlugin.getMsg("startedSession"));
 
@@ -201,9 +210,8 @@ public class CmdPatch extends AbstractCommand {
             return;
         }
         Player player = (Player) sender;
-        PatchSession session = new PatchSession(player);
-
-        if (session == null) {
+        PatchSession session = SessionManager.getInstance().getSession(player);
+        if (session != null) {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("alreadyInSession"));
             return;
         }
@@ -212,9 +220,7 @@ public class CmdPatch extends AbstractCommand {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("noPlotsAvailable"));
             return;
         }
-
-        SessionManager.getInstance().add(session);
-        MsgUtil.msg(sender, PatchTestPlugin.getPlugin().msg().getStringList("newPatchSession"));
+        player.openInventory(InventoryManager.getInstance().getCreateInventory());
     }
 
     private void join(CommandSender sender, String[] args) {
@@ -248,6 +254,12 @@ public class CmdPatch extends AbstractCommand {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("sessionAlreadyStarted"));
             return;
         }
+
+        if (session.getSettings().isRanked() && session.getPlayers().size() >= TeamSize.TEAM.getSize()) {
+            MsgUtil.msg(sender, PatchTestPlugin.getMsg("teamFull"));
+            return;
+        }
+
 
         MsgUtil.msg(sender, PatchTestPlugin.getMsg("joinedSession"), new Pair<>("{player}", creator.getName()));
         session.getPlayers().forEach(player1 -> MsgUtil.msg(player1, PatchTestPlugin.getMsg("playerJoinedYourSession"), new Pair<>("{player}", player.getName())));
@@ -286,7 +298,6 @@ public class CmdPatch extends AbstractCommand {
             return;
         }
 
-
         if (session.containsPlayer(toAdd)) {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("playerAlreadyInSession"), new Pair<>("{player}", toAdd.getName()));
             return;
@@ -307,6 +318,10 @@ public class CmdPatch extends AbstractCommand {
             return;
         }
 
+        if (session.getSettings().isRanked() && session.getPlayers().size() >= TeamSize.TEAM.getSize()) {
+            MsgUtil.msg(sender, PatchTestPlugin.getMsg("teamFullCantInvite"));
+            return;
+        }
 
         SessionManager.getInstance().newInvite(player, toAdd);
         MsgUtil.msg(toAdd, PatchTestPlugin.getMsg("beenInvited"), new Pair<>("{player}", player.getName()));
@@ -344,12 +359,10 @@ public class CmdPatch extends AbstractCommand {
             return;
         }
 
-
         if (!session.containsPlayer(toRemove)) {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("cantRemoveNotInSession"), new Pair<>("{player}", toRemove.getName()));
             return;
         }
-
 
         session.getPlayers().remove(toRemove);
         MsgUtil.msg(sender, PatchTestPlugin.getMsg("removedFromSession"), new Pair<>("{player}", toRemove.getName()));

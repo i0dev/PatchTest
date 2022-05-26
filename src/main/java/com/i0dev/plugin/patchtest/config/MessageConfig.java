@@ -38,6 +38,7 @@ public class MessageConfig extends AbstractConfiguration {
 
         config.set("onlyCreatorCanStart", "&7You are not the creator of this session. Only the creator can start.");
         config.set("startedSession", "&7You have started the patch session, please wait a few seconds while the plot generates.");
+        config.set("alreadyStartedSession", "&7Your session is already active.");
         config.set("sessionStartingSoon", Arrays.asList("&aYour session is starting soon",
                 "",
                 "&7After the start countdown,",
@@ -91,7 +92,8 @@ public class MessageConfig extends AbstractConfiguration {
                 "",
                 "&7The guardians have breached your base, you lasted:",
                 "&c&l{time}",
-                ""
+                "&7Session Player Size: &c{size}",
+                "&7Session Players: &c{players}"
         ));
 
         config.set("playerLoggedOffline", "&c{player}&7 has logged offline, they were removed from the session but can rejoin at any time.");
@@ -99,6 +101,10 @@ public class MessageConfig extends AbstractConfiguration {
         config.set("yourNewLeaderOldLogOff", "&7You have been transferred leadership of this session because &c{player}&7 has logged offline.");
         config.set("rejoinLogin", "&7You can still join back on the session you were in when you logged offline. Type &c/patch rejoin &7to rejoin.");
         config.set("noRejoin", "&7You are not in any sessions where you can rejoin.");
+
+        config.set("teamFull", "&7That team is currently at its maximum members.");
+        config.set("teamFullCantInvite", "&7Your team is at the maximum amount of members.");
+
 
     }
 }

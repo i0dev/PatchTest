@@ -11,6 +11,8 @@ import org.bukkit.Location;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Zombie;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -31,15 +33,16 @@ public class MobManager extends AbstractManager {
         setListener(true);
         mob = Bukkit.getScheduler().runTaskTimerAsynchronously(PatchTestPlugin.getPlugin(), taskSpawnMobs, 20L, 20L);
     }
+
     long lastSpawnTime = 0;
     private final Runnable taskSpawnMobs = () -> {
         for (PatchSession session : SessionManager.getInstance().getSessions()) {
             long timeStarted = session.getStartTime();
             for (Object obj : PatchTestPlugin.getPlugin().monster().getList("monsters")) {
                 MonsterSpawnTime mst = new MonsterSpawnTime((Map<String, Object>) obj);
-                Map<Long, Integer> times = mst.getTimes();
-                for (Map.Entry<Long, Integer> entry : times.entrySet()) {
-                    long time = entry.getKey();
+                Map<Integer, Integer> times = mst.getTimes();
+                for (Map.Entry<Integer, Integer> entry : times.entrySet()) {
+                    long time = entry.getKey() * 1000L;
                     int amountPerPlayer = entry.getValue();
                     if (System.currentTimeMillis() - timeStarted > time
                             && System.currentTimeMillis() - timeStarted < time + 2000
@@ -56,6 +59,7 @@ public class MobManager extends AbstractManager {
                                     mob.setPassenger(null);
                                     mob.setCanPickupItems(false);
                                     mob.setCustomNameVisible(true);
+                                    mob.setRemoveWhenFarAway(false);
                                     mob.setCustomName(MsgUtil.color(mst.getCustomName()));
                                     mob.setTarget(player);
                                     if (mob instanceof Zombie) {
@@ -86,4 +90,12 @@ public class MobManager extends AbstractManager {
             }
         }
     };
+
+
+    @EventHandler
+    public void onDamage(EntityDamageEvent e) {
+        if (e.getCause().equals(EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) || e.getCause().equals(EntityDamageEvent.DamageCause.BLOCK_EXPLOSION))
+            e.setCancelled(true);
+    }
+
 }

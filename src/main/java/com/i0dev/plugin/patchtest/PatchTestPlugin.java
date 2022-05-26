@@ -1,7 +1,6 @@
 package com.i0dev.plugin.patchtest;
 
 import com.i0dev.plugin.patchtest.command.CmdObby;
-import com.i0dev.plugin.patchtest.command.CmdShoot;
 import com.i0dev.plugin.patchtest.config.GeneralConfig;
 import com.i0dev.plugin.patchtest.config.MessageConfig;
 import com.i0dev.plugin.patchtest.command.CmdPatch;
@@ -9,19 +8,8 @@ import com.i0dev.plugin.patchtest.config.MonsterConfig;
 import com.i0dev.plugin.patchtest.hook.PlaceholderAPIHook;
 import com.i0dev.plugin.patchtest.manager.*;
 import com.i0dev.plugin.patchtest.object.CorePlugin;
-import com.i0dev.plugin.patchtest.object.config.MonsterSpawnTime;
-import com.i0dev.plugin.patchtest.object.config.PotionEffect;
-import com.i0dev.plugin.patchtest.template.AbstractConfiguration;
 import lombok.Getter;
 import lombok.SneakyThrows;
-import org.bukkit.configuration.ConfigurationSection;
-
-import java.io.*;
-import java.net.URLConnection;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 public class PatchTestPlugin extends CorePlugin {
@@ -39,6 +27,7 @@ public class PatchTestPlugin extends CorePlugin {
         registerManager(PlotManager.getInstance());
         registerManager(CannonManager.getInstance());
         registerManager(SessionManager.getInstance());
+        registerManager(InventoryManager.getInstance());
         registerManager(MobManager.getInstance());
 
         // Hooks
@@ -51,13 +40,22 @@ public class PatchTestPlugin extends CorePlugin {
 
         // Commands
         registerCommand(CmdPatch.getInstance(), "patch");
-        registerCommand(CmdShoot.getInstance(), "shoot");
         registerCommand(CmdObby.getInstance(), "obby");
-    }
 
-    @Override
-    public void shutdown() {
-
+        setCommandsForHelp(
+                "patch help",
+                "patch tp",
+                "patch create",
+                "patch leave",
+                "patch start",
+                "patch rejoin",
+                "patch invite <player>",
+                "patch join <player>",
+                "patch remove <player>",
+                "patch reload",
+                "patch version",
+                "obby"
+        );
     }
 
     /**

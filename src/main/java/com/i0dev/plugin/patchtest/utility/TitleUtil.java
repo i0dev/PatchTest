@@ -4,8 +4,8 @@ import org.bukkit.entity.Player;
 
 /**
  * A utility class for sending titles to players.
- * <p>
- * Credit to EmberCM for these methods
+ *
+ * @author EmberCM (<a href="https://github.com/EmberCM">GitHub</a>), Andrew Magnuson
  */
 public class TitleUtil {
 
@@ -19,6 +19,7 @@ public class TitleUtil {
      * @param fadeOut  Ticks to spend on the fade out animation
      * @param title    The title to send
      * @param subtitle The subtitle to send
+     * @author EmberCM (<a href="https://github.com/EmberCM">GitHub</a>)
      */
     public static void sendTitle(Player player, Integer fadeIn, Integer stay, Integer fadeOut, String title, String subtitle) {
         try {
@@ -51,6 +52,7 @@ public class TitleUtil {
      * @param connection The connection to the player
      * @param enumClass  The enum class of the title action
      * @throws Exception if it fails to send the packet
+     * @author EmberCM (<a href="https://github.com/EmberCM">GitHub</a>)
      */
     private static void sendPacket(Player player, String text, String type, Object connection, Class<?> enumClass) throws Exception {
         text = "{\"text\": \"" + MsgUtil.color(text.replaceAll("%player%", player.getDisplayName())) + "\"}";

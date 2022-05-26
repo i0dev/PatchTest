@@ -19,11 +19,9 @@ commands:
     aliases:
       - freeObsidian
       - freeObby
+      - obbyfill
     description: Opens an inventory full of obsidian.
     usage: /obby
-  shoot:
-    description: sssssssss
-    usage: /sss
 
 permissions:
   patchtest.create:
@@ -34,6 +32,9 @@ permissions:
     default: not op
   patchtest.invite:
     description: Use the /patch invite command
+    default: not op
+  patchtest.remove:
+    description: Use the /patch remove command
     default: not op
   patchtest.join:
     description: Use the /patch join command

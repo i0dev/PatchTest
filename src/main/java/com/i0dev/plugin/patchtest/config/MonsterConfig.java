@@ -19,7 +19,7 @@ public class MonsterConfig extends AbstractConfiguration {
 
     @Override
     protected void setValues() {
-        config.set("monsters", Arrays.asList(new MonsterSpawnTime(Collections.singletonMap(15000L, 1), "&cGuardian", EntityType.SKELETON, 100,
+        config.set("monsters", Arrays.asList(new MonsterSpawnTime(Collections.singletonMap(15, 1), "&cGuardian", EntityType.SKELETON, 20,
                 Arrays.asList(new PotionEffect("WATER_BREATHING", 3, 10000), new PotionEffect("SPEED", 3, 10000)),
                 new ConfigItemStack(
                         Material.DIAMOND_HELMET,
@@ -51,7 +51,7 @@ public class MonsterConfig extends AbstractConfiguration {
                         new ArrayList<>(),
                         Collections.singletonMap("PROTECTION_ENVIRONMENTAL", 5)
                 )
-        ).serialize(), new MonsterSpawnTime(Collections.singletonMap(20000L, 1), "&cGuardian", EntityType.ZOMBIE, 100,
+        ).serialize(), new MonsterSpawnTime(Collections.singletonMap(20, 1), "&cGuardian", EntityType.ZOMBIE, 20,
                 Arrays.asList(new PotionEffect("WATER_BREATHING", 3, 10000), new PotionEffect("SPEED", 3, 10000)),
                 new ConfigItemStack(
                         Material.DIAMOND_HELMET,

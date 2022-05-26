@@ -32,10 +32,10 @@ public class TimeUtil {
         long seconds = TimeUnit.MILLISECONDS.toSeconds(milliseconds);
 
 
-        ret += days + (days == 1 ? " day " : days > 1 ? " days " : "");
-        ret += hours + (hours == 1 ? " hour " : hours > 1 ? " hours " : "");
-        ret += minutes + (minutes == 1 ? " minute " : minutes > 1 ? " minutes " : "");
-        ret += seconds + (seconds == 1 ? " second " : seconds > 1 ? " seconds " : "");
+        ret += days == 1 ? days + " day " : days > 1 ? days + " days " : "";
+        ret += hours == 1 ? hours + " hour " : hours > 1 ? hours + " hours " : "";
+        ret += minutes == 1 ? minutes + " minute " : minutes > 1 ? minutes + " minutes " : "";
+        ret += seconds == 1 ? minutes + " second " : seconds > 1 ? minutes + " seconds " : "";
 
         return ret.isEmpty() ? "0 seconds" : StringUtils.trim(ret);
     }

@@ -160,7 +160,7 @@ public class SessionManager extends AbstractManager {
     public void onExplode(EntityExplodeEvent e) {
         PatchSession session = sessions.stream().filter(s -> s.getPlot().getBaseCuboid().contains(e.getLocation())).findFirst().orElse(null);
         if (session == null) return;
-        session.endSessionLose();
+        session.end();
     }
 
     @EventHandler

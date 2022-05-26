@@ -11,30 +11,25 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.bukkit.*;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
 @ToString
-public class
-PatchSession {
-
+public class PatchSession {
     private UUID uuid;
     private Player creator;
     private List<Player> players;
     private boolean isCreating;
     private boolean started;
     private boolean inviteAllowed;
-    private int adjustHowOften;
     private PatchPlot plot;
     private BukkitTask shoot;
     private BukkitTask countdown;
@@ -43,47 +38,30 @@ PatchSession {
     private boolean inCountdown;
 
     private List<UUID> rejoinList;
+    private Adjuster adjuster;
+    private long lastShotTime;
 
-    private boolean firstShot;
+    private SessionSettings settings;
 
-
-    public PatchSession(Player creator) {
+    public PatchSession(Player creator, SessionSettings settings) {
         this.players = new ArrayList<>();
+        this.settings = settings;
         this.players.add(creator);
         this.creator = creator;
         isCreating = false;
         plot = PlotManager.getInstance().getNextAvailablePlot();
-        lastShotTime = 0;
-        lastAdjustTime = 0;
         inviteAllowed = true;
         started = false;
         lastCountdownMessageSent = 0;
-        currentShootingLocation = plot.getDefaultShootLocation();
+        lastShotTime = 0;
         uuid = UUID.randomUUID();
-        firstShot = true;
-        newAdjustTime();
+        adjuster = new Adjuster(plot, this);
     }
 
-    public void newAdjustTime() {
-        int min = PatchTestPlugin.getPlugin().cnf().getInt("adjustTimeRandomLowerBound");
-        int max = PatchTestPlugin.getPlugin().cnf().getInt("adjustTimeRandomHigherBound");
-        this.adjustHowOften = ThreadLocalRandom.current().nextInt((max - min) + 1) + min;
-    }
-
-    private Location currentShootingLocation;
-    private long lastShotTime;
-    private long lastAdjustTime;
     public Runnable taskShoot = () -> {
-        if (System.currentTimeMillis() >= lastShotTime + (PatchTestPlugin.getPlugin().cnf().getInt("cannonSpeed") * 1000L)) {
-            if (System.currentTimeMillis() >= lastAdjustTime + (adjustHowOften * 1000L)) {
-                currentShootingLocation = getMostEfficientLocation();
-                lastAdjustTime = System.currentTimeMillis();
-                newAdjustTime();
-                System.out.println("Adjusted to: " + currentShootingLocation);
-            }
-            CannonManager.getInstance().shootCannon(currentShootingLocation);
+        if (System.currentTimeMillis() >= lastShotTime + (settings.getCannonSpeed() * 1000L)) {
+            Bukkit.getScheduler().runTask(PatchTestPlugin.getPlugin(), () -> CannonManager.getInstance().shoot(CannonManager.getCenter(adjuster.getShotLocation()), BlockFace.NORTH, settings.getCannonType()));
             lastShotTime = System.currentTimeMillis();
-            this.firstShot = false;
         }
     };
     private long startedCountdownTime;
@@ -102,9 +80,7 @@ PatchSession {
                 shoot = Bukkit.getScheduler().runTaskTimer(PatchTestPlugin.getPlugin(), taskShoot, 20L, 20L);
                 started = true;
                 startTime = System.currentTimeMillis();
-                this.lastAdjustTime = System.currentTimeMillis();
                 inCountdown = false;
-                Bukkit.getScheduler().runTask(PatchTestPlugin.getPlugin(), () -> players.forEach(player -> PatchTestPlugin.getPlugin().getServer().dispatchCommand(Bukkit.getConsoleSender(), "kit " + PatchTestPlugin.getPlugin().cnf().get("patchKitName") + " " + player.getName())));
                 countdown.cancel();
             } else {
                 long secondsRemaining = (startedCountdownTime + (countdownLengthSeconds * 1000L) - System.currentTimeMillis()) / 1000L;
@@ -122,46 +98,36 @@ PatchSession {
         Bukkit.getScheduler().runTask(PatchTestPlugin.getPlugin(), () -> players.forEach(player -> player.teleport(plot.getTpLocation())));
         startedCountdownTime = System.currentTimeMillis();
         countdown = Bukkit.getScheduler().runTaskTimerAsynchronously(PatchTestPlugin.getPlugin(), taskCountdown, 0L, 20L);
+        Bukkit.getScheduler().runTask(PatchTestPlugin.getPlugin(), () -> players.forEach(player -> PatchTestPlugin.getPlugin().getServer().dispatchCommand(Bukkit.getConsoleSender(), "kit " + PatchTestPlugin.getPlugin().cnf().get("patchKitName") + " " + player.getName())));
     };
 
     public void start() {
         inviteAllowed = false;
         create = Bukkit.getScheduler().runTaskAsynchronously(PatchTestPlugin.getPlugin(), taskCreate);
+
+        if (settings.isRanked()) {
+            TeamSize size;
+            SimpleConfig cnf = PatchTestPlugin.getPlugin().cnf();
+            if (players.size() == 1) {
+                size = TeamSize.SOLO;
+                settings.setCannonSpeed(cnf.getInt("rankedSettings.teamSizeCannonSpeedMap.SOLO"));
+            } else if (players.size() == 2) {
+                size = TeamSize.DUO;
+                settings.setCannonSpeed(cnf.getInt("rankedSettings.teamSizeCannonSpeedMap.DUO"));
+            } else if (players.size() > 2 && players.size() <= TeamSize.SQUAD.getSize()) {
+                size = TeamSize.SQUAD;
+                settings.setCannonSpeed(cnf.getInt("rankedSettings.teamSizeCannonSpeedMap.SQUAD"));
+            } else if (players.size() > 5 && players.size() <= TeamSize.TEAM.getSize()) {
+                size = TeamSize.TEAM;
+                settings.setCannonSpeed(cnf.getInt("rankedSettings.teamSizeCannonSpeedMap.TEAM"));
+            } else size = TeamSize.UNLIMITED;
+            this.settings.setTeamSize(size);
+        }
+
     }
 
     public boolean isCreator(Player player) {
         return getCreator().getUniqueId().equals(player.getUniqueId());
-    }
-
-    public Location getMostEfficientLocation() {
-        if (firstShot) return plot.getDefaultShootLocation();
-        List<Location> frontWallBlocks = new ArrayList<>();
-        Cuboid walls = getPlot().getWallsCuboid();
-        for (int y = 150; y < walls.getYMax(); y++) {
-            for (int x = (int) walls.getXMin(); x < walls.getXMax(); x++) {
-                frontWallBlocks.add(new Location(Bukkit.getWorld(PatchTestPlugin.getPlugin().cnf().getString("patchWorldName")), x, y, getPlot().getWallsCuboid().getZMax()));
-            }
-        }
-        Collections.shuffle(frontWallBlocks);
-
-        int longestHole = 0;
-        Location farthestLocation = plot.getDefaultShootLocation();
-        for (Location frontWallBlock : frontWallBlocks) {
-            int count = 0;
-            Location location = frontWallBlock;
-            Material blockType = location.getBlock().getType();
-            while ((blockType == Material.AIR || blockType == Material.WATER || blockType == Material.STATIONARY_WATER) && location.getZ() > plot.getWallsCuboid().getZMin()) {
-                count++;
-                location = location.subtract(0, 0, 1);
-                blockType = location.getBlock().getType();
-            }
-            if (count > longestHole) {
-                longestHole = count;
-                farthestLocation = frontWallBlock;
-            }
-        }
-        farthestLocation.setZ(plot.getZShootCoordinate());
-        return farthestLocation;
     }
 
     public boolean containsPlayer(Player player) {
@@ -171,11 +137,28 @@ PatchSession {
         return false;
     }
 
-    public void endSessionLose() {
-        getPlayers().forEach(player -> {
-            player.setHealth(0);
-            MsgUtil.msg(player, PatchTestPlugin.getPlugin().msg().getStringList("lostSession"), new Pair<>("{time}", TimeUtil.formatTimePeriod(System.currentTimeMillis() - getStartTime())));
-        });
+    public void end() {
+
+        if (settings.isRanked()) {
+            getPlayers().forEach(player -> {
+                player.setHealth(0);
+                MsgUtil.msg(player, PatchTestPlugin.getPlugin().msg().getStringList("lostSession"),
+                        new Pair<>("{size}", settings.getTeamSize().toString()),
+                        new Pair<>("{players}", getPlayers().toString()),
+                        new Pair<>("{time}", TimeUtil.formatTimePeriod(System.currentTimeMillis() - getStartTime())));
+            });
+
+
+            ScoreEntry entry = new ScoreEntry(getCreator().getUniqueId(),
+                    players.stream()
+                            .map(Entity::getUniqueId)
+                            .collect(Collectors.toSet()),
+                    settings.getTeamSize(),
+                    System.currentTimeMillis() - getStartTime(),
+                    System.currentTimeMillis());
+
+            // save
+        }
 
         stop();
     }

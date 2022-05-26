@@ -1,134 +1,341 @@
 package com.i0dev.plugin.patchtest.manager;
 
 import com.i0dev.plugin.patchtest.PatchTestPlugin;
+import com.i0dev.plugin.patchtest.object.CannonType;
+import com.i0dev.plugin.patchtest.object.NukeTimer;
 import com.i0dev.plugin.patchtest.template.AbstractManager;
+import com.i0dev.plugin.patchtest.utility.NMSUtil;
 import lombok.Getter;
-import net.minecraft.server.v1_8_R3.BlockCactus;
-import net.minecraft.server.v1_8_R3.EntityFallingBlock;
-import net.minecraft.server.v1_8_R3.EntityTNTPrimed;
+import lombok.SneakyThrows;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftFallingSand;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftTNTPrimed;
+import org.bukkit.World;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.FallingBlock;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.TNTPrimed;
+import org.bukkit.util.Vector;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
+/**
+ * This manager will be all things relating to shooting cannons.
+ *
+ * @author BestBearr (crumbygames12@gmail.com)
+ * @author Andrew Magnuson
+ */
 public class CannonManager extends AbstractManager {
-
 
     @Getter
     private static final CannonManager instance = new CannonManager();
 
-    private static final int add = 1;
-
-    public void shootCannon(Location loc) {
-        System.out.println("shooting at: " + loc);
-        Location block = new Location(loc.getWorld(), loc.getBlockX(), loc.getBlockY() + 1, loc.getBlockZ());
-        Location block2 = new Location(loc.getWorld(), loc.getBlockX(), loc.getBlockY() - 1, loc.getBlockZ());
-        block.getBlock().setType(Material.BEDROCK);
-        loc.getBlock().setType(Material.AIR);
-        block2.getBlock().setType(Material.AIR);
-        final List<Entity> shot1 = new LinkedList<>(), shot2 = new LinkedList<>();
-        org.bukkit.World world = loc.getWorld();
-        Location tntloc = loc.clone().add(0.5, 0, 0.5);
-        TNTPrimed tnt = world.spawn(tntloc, TNTPrimed.class);// spawn 1rev tnt in
-        FallingBlock sand;
-        tnt.setFuseTicks(10 + add + 4);
-        shot1.add(tnt);
-        for (int i = 0; i < 313; ++i) { // add the hammer!
-            tnt = world.spawn(tntloc, TNTPrimed.class);
-            tnt.setFuseTicks(14 + add + 4);
-            shot2.add(tnt);
+    /**
+     * Will shoot a shot of the specified type at the current location, and shooting in the specified direction
+     *
+     * @param location   The location to spawn in the entity
+     * @param direction  The direction to shoot
+     * @param cannonType The type of cannon shot to create
+     * @author Andrew Magnuson
+     */
+    public void shoot(Location location, BlockFace direction, CannonType cannonType) {
+        NukeTimer timer = new NukeTimer(1500, TimeUnit.MILLISECONDS);
+        switch (cannonType) {
+            case NUKE:
+                shootNuke(location, direction, timer);
+                break;
+            case AP_NUKE:
+                shootNukeAp(location, direction, timer);
+                break;
+            case OS_AP_NUKE:
+                shootNukeOsAp(location, direction, timer);
+                break;
         }
-        int hammer = 14 + add + 4;
-        for (int i = 0; i < 255; ++i) { // slabbust
-            tnt = world.spawn(tntloc, TNTPrimed.class);
-            tnt.setFuseTicks(14 + add + 4);
-            shot1.add(tnt);
-        }
-
-        for (int i = 0; i < 255; ++i) { // add sand :D
-            sand = world.spawnFallingBlock(loc, 12, (byte) 0);
-            shot1.add(sand);
-        }
-
-        tnt = world.spawn(tntloc, TNTPrimed.class); // add 1stopper tnt for hammer
-        tnt.setFuseTicks(hammer + 6); // set delay
-        shot2.add(tnt);
-
-        for (int i = 0; i < 6; ++i) { // os sand
-            sand = world.spawnFallingBlock(loc, 12, (byte) 0);
-            shot2.add(sand);
-        }
-
-        for (int i = 0; i < 10; ++i) { // os hammer
-            tnt = world.spawn(tntloc, TNTPrimed.class);
-            tnt.setFuseTicks(hammer + 7);
-            shot2.add(tnt);
-        }
-
-        for (int i = 0; i < 4; ++i) { // scatter!
-            tnt = world.spawn(tntloc, TNTPrimed.class);
-            tnt.setFuseTicks(hammer + 7 + 10);
-            shot2.add(tnt);
-        }
-
-        for (int i = 0; i < 6; ++i) { // beginning of webnuke
-            tnt = world.spawn(tntloc, TNTPrimed.class);
-            tnt.setFuseTicks(hammer + 7 + 10 + 3);
-            shot2.add(tnt);
-        }
-
-        for (int i = 0; i < 350; ++i) { // rest of webnuke
-            tnt = world.spawn(tntloc, TNTPrimed.class);
-            tnt.setFuseTicks(hammer + 7 + 10 + 3);
-            shot2.add(tnt);
-            tnt = world.spawn(tntloc, TNTPrimed.class);
-            tnt.setFuseTicks(hammer + 7 + 10 + 3);
-            shot1.add(tnt);
-        }
-
-        sand = world.spawnFallingBlock(loc, 12, (byte) 0); // finally, oneshot sand!
-        shot2.add(sand);
-
-
-        Bukkit.getScheduler().scheduleSyncDelayedTask(PatchTestPlugin.getPlugin(), () -> { // delay by 1 cus it looks nicer to use this idk lmao
-            for (org.bukkit.entity.Entity entity : shot1) {
-                if (entity instanceof TNTPrimed) {
-                    CraftTNTPrimed etnt = (CraftTNTPrimed) entity;
-                    EntityTNTPrimed tntPrimed = etnt.getHandle();
-                    tntPrimed.motY += 200;
-                    tntPrimed.motZ -= 200;
-                } else if (entity instanceof FallingBlock) {
-                    CraftFallingSand etnt = (CraftFallingSand) entity;
-                    EntityFallingBlock tntPrimed = etnt.getHandle();
-                    tntPrimed.motY += 200;
-                    tntPrimed.motZ -= 200;
-                }
-            }
-        }, 1L);
-        Bukkit.getScheduler().scheduleSyncDelayedTask(PatchTestPlugin.getPlugin(), () -> { // delay by 4 later than first shot movement.
-            for (org.bukkit.entity.Entity entity : shot2) {
-                if (entity instanceof TNTPrimed) {
-                    CraftTNTPrimed etnt = (CraftTNTPrimed) entity;
-                    EntityTNTPrimed tntPrimed = etnt.getHandle();
-                    tntPrimed.motY += 200;
-                    tntPrimed.motZ -= 200;
-                } else if (entity instanceof FallingBlock) {
-                    CraftFallingSand etnt = (CraftFallingSand) entity;
-                    EntityFallingBlock tntPrimed = etnt.getHandle();
-                    tntPrimed.motY += 200;
-                    tntPrimed.motZ -= 200;
-                }
-            }
-        }, 5L);
-
     }
 
+    /**
+     * Will shoot a normal standard web-nuke at the desired location.
+     *
+     * @param location  The location to spawn the shot at
+     * @param direction The direction to shoot the shot
+     * @param nukeTimer The nuke timer
+     * @author BestBearr (crumbygames12@gmail.com)
+     */
+    private void shootNuke(Location location, BlockFace direction, NukeTimer nukeTimer) {
+        List<Entity> first = new ArrayList<>(), second = new ArrayList<>();
+
+        // vector to add to entities
+        Vector vec = new Vector(0, 250, 0);
+        vec.add(getDirection(direction).multiply(300));
+
+        final World world = location.getWorld();
+
+        // spawn the hammer
+        this.compute(300, i -> {
+            second.add(this.setFuse(world.spawnEntity(location, EntityType.PRIMED_TNT), 4 + 6));
+        });
+
+        // spawn the slabbust
+        this.compute(50, i -> {
+            first.add(this.setFuse(world.spawnEntity(location, EntityType.PRIMED_TNT), 4 + 6));
+        });
+
+        // delay for ooe
+        // spawn the sand
+        this.compute(252, i -> first.add(world.spawnFallingBlock(location, 12, (byte) 0)));
+
+        // spawn the webbust nuke
+        final int nuke = nukeTimer.toGameticks();
+        this.compute(125, i -> {
+            second.add(this.setFuse(world.spawnEntity(location, EntityType.PRIMED_TNT), 4 + nuke));
+            if (i > 4)
+                first.add(this.setFuse(world.spawnEntity(location, EntityType.PRIMED_TNT), 4 + nuke));
+        });
+
+        // spawn the os sand
+        second.add(world.spawnFallingBlock(location, 12, (byte) 1));
+
+        // apply the velocity
+        // send off the sand entities (first power)
+        first.forEach(ent -> this.setVelocity(ent, vec));
+
+        // send off the second power
+        Bukkit.getScheduler().runTaskLater(PatchTestPlugin.getPlugin(), () -> {
+            second.forEach(ent -> this.setVelocity(ent, vec));
+        }, 4L);
+    }
+
+    /**
+     * Will shoot a shot with Over-Stacker & AP enabled.
+     * Over-Stacker is limited to 5 blocks
+     *
+     * @param location  The location to spawn the shot at
+     * @param direction The direction to shoot the shot
+     * @param nukeTimer The nuke timer
+     * @author BestBearr (crumbygames12@gmail.com)
+     */
+    private void shootNukeOsAp(Location location, BlockFace direction, NukeTimer nukeTimer) {
+        List<Entity> first = new ArrayList<>(), second = new ArrayList<>(), third = new ArrayList<>();
+
+        // vector to add to entities
+        Vector vec = new Vector(0, 250, 0);
+        vec.add(getDirection(direction).multiply(300));
+
+        final World world = location.getWorld();
+        final int nuke = nukeTimer.toGameticks();
+
+        // spawn the hammer
+        this.compute(303, i -> {
+            second.add(this.setFuse(world.spawnEntity(location, EntityType.PRIMED_TNT), 4 + 6));
+        });
+
+        // spawn the slabbust
+        this.compute(50, i -> {
+            first.add(this.setFuse(world.spawnEntity(location, EntityType.PRIMED_TNT), 4 + 6));
+        });
+
+        // delay for ooe
+        // spawn the sand
+        this.compute(252, i -> {
+            first.add(world.spawnFallingBlock(location, 12, (byte) 0));
+        });
+
+
+        // overstacker stuff
+
+        // single splitter tnt, 3rst after hammer
+        second.add(this.setFuse(world.spawnEntity(location, EntityType.PRIMED_TNT), 4 + 6 + 6));
+
+        // spawn overstack sand
+        this.compute(8, i -> second.add(world.spawnFallingBlock(location, 13, (byte) 0)));
+
+        // 8 restack tnt, 3.5 rst after hammer
+        this.compute(8, i -> second.add(this.setFuse(world.spawnEntity(location, EntityType.PRIMED_TNT), 4 + 6 + 7)));
+
+        // spawn the os sand
+        second.add(world.spawnFallingBlock(location, 12, (byte) 1));
+
+        // scatter 2rst before nuke
+        this.compute(8, i -> second.add(this.setFuse(world.spawnEntity(location, EntityType.PRIMED_TNT), 4 + nuke - 4)));
+
+
+        // nuke stuff
+        // spawn the webbust nuke
+        this.compute(250, i -> {
+            second.add(this.setFuse(world.spawnEntity(location, EntityType.PRIMED_TNT), 4 + nuke));
+            if (i > 4)
+                first.add(this.setFuse(world.spawnEntity(location, EntityType.PRIMED_TNT), 4 + nuke));
+        });
+
+        // spawn the AP
+        this.compute(125, i -> {
+            third.add(this.setFuse(world.spawnEntity(location, EntityType.PRIMED_TNT), 4 + 1 + nuke));
+        });
+
+        // apply the velocity
+        // send off the sand entities (first power)
+        first.forEach(ent -> this.setVelocity(ent, vec));
+
+        // send off the second power
+        Bukkit.getScheduler().runTaskLater(PatchTestPlugin.getPlugin(), () -> {
+            second.forEach(ent -> this.setVelocity(ent, vec));
+        }, 4L);
+
+        // send off the third power
+        Bukkit.getScheduler().runTaskLater(PatchTestPlugin.getPlugin(), () -> {
+            third.forEach(ent -> this.setVelocity(ent, vec));
+        }, 4L + 1L + nuke);
+    }
+
+    /**
+     * Will shoot a shot with AP enabled.
+     *
+     * @param location  The location to spawn the shot at
+     * @param direction The direction to shoot the shot
+     * @param nukeTimer The nuke timer
+     * @author BestBearr (crumbygames12@gmail.com)
+     */
+    private void shootNukeAp(Location location, BlockFace direction, NukeTimer nukeTimer) {
+        List<Entity> first = new ArrayList<>(), second = new ArrayList<>(), third = new ArrayList<>();
+
+        // vector to add to entities
+        Vector vec = new Vector(0, 250, 0);
+        vec.add(getDirection(direction).multiply(300));
+
+        final World world = location.getWorld();
+
+        // spawn the hammer
+        this.compute(300, i -> {
+            second.add(this.setFuse(world.spawnEntity(location, EntityType.PRIMED_TNT), 4 + 6));
+        });
+
+        // spawn the slabbust
+        this.compute(50, i -> {
+            first.add(this.setFuse(world.spawnEntity(location, EntityType.PRIMED_TNT), 4 + 6));
+        });
+
+        // delay for ooe
+        // spawn the sand
+        this.compute(252, i -> {
+            first.add(world.spawnFallingBlock(location, 12, (byte) 0));
+        });
+
+        // spawn the webbust nuke
+        final int nuke = nukeTimer.toGameticks();
+        this.compute(125, i -> {
+            second.add(this.setFuse(world.spawnEntity(location, EntityType.PRIMED_TNT), 4 + nuke));
+            if (i > 4)
+                first.add(this.setFuse(world.spawnEntity(location, EntityType.PRIMED_TNT), 4 + nuke));
+        });
+
+        // spawn the os sand
+        second.add(world.spawnFallingBlock(location, 12, (byte) 1));
+
+        // spawn the AP
+        this.compute(250, i -> {
+            third.add(this.setFuse(world.spawnEntity(location, EntityType.PRIMED_TNT), 4 + 1 + nuke));
+        });
+
+        // apply the velocity
+        // send off the sand entities (first power)
+        first.forEach(ent -> this.setVelocity(ent, vec));
+
+        // send off the second power
+        Bukkit.getScheduler().runTaskLater(PatchTestPlugin.getPlugin(), () -> {
+            second.forEach(ent -> this.setVelocity(ent, vec));
+        }, 4L);
+
+        // send off the third power
+        Bukkit.getScheduler().runTaskLater(PatchTestPlugin.getPlugin(), () -> {
+            third.forEach(ent -> this.setVelocity(ent, vec));
+        }, 4L + 1L + nuke);
+    }
+
+    /**
+     * Will take an entity and set the fuse ticks to the desired length
+     *
+     * @param entity The entity to set
+     * @param fuse   The length of the fuse in ticks
+     * @return The entity with modified fuse length
+     * @author BestBearr (crumbygames12@gmail.com)
+     */
+    private Entity setFuse(Entity entity, int fuse) {
+        if (entity instanceof TNTPrimed)
+            ((TNTPrimed) entity).setFuseTicks(fuse);
+        return entity;
+    }
+
+    /**
+     * Will set the velocity of the specified entity using nms.
+     *
+     * @param entity The entity to set velocity to
+     * @param vec    The velocity vector.
+     * @author COMING SOON, either bears or i0s
+     */
+    @SneakyThrows
+    private void setVelocity(Entity entity, Vector vec) {
+        //bear
+        net.minecraft.server.v1_8_R3.Entity ent = ((org.bukkit.craftbukkit.v1_8_R3.entity.CraftEntity) entity).getHandle();
+        ent.motX += vec.getX();
+        ent.motY += vec.getY();
+        ent.motZ += vec.getZ();
+
+        //i0
+
+//        Object craftEntity = NMSUtil.getOBCClass("entity.CraftEntity").cast(entity);
+//        Object handle = craftEntity.getClass().getMethod("getHandle").invoke(craftEntity);
+//
+//        Double motX = (Double) handle.getClass().getField("motX").get(handle);
+//        Double motY = (Double) handle.getClass().getField("motY").get(handle);
+//        Double motZ = (Double) handle.getClass().getField("motZ").get(handle);
+//
+//        handle.getClass().getField("motX").set(handle, motX + vec.getX());
+//        handle.getClass().getField("motY").set(handle, motY + vec.getX());
+//        handle.getClass().getField("motZ").set(handle, motZ + vec.getX());
+//
+    }
+
+    /**
+     * Will computer the times with the consumer
+     *
+     * @param times    Times
+     * @param consumer Consumer
+     * @author BestBearr (crumbygames12@gmail.com)
+     */
+    private void compute(int times, Consumer<Integer> consumer) {
+        for (int i = 0; i < times; i++)
+            consumer.accept(i);
+    }
+
+    /**
+     * Will get the center of the block from the specified location.
+     *
+     * @param loc The location
+     * @return The exact center of that block
+     * @author BestBearr (crumbygames12@gmail.com)
+     */
+    public static Location getCenter(Location loc) {
+        return new Location(loc.getWorld(),
+                loc.getBlockX() + 0.5D,
+                loc.getBlockY() + 0.5D,
+                loc.getBlockZ() + 0.5D);
+    }
+
+    /**
+     * Will get the direction from the blackface and turn it into a vector
+     *
+     * @param face The block face
+     * @return A vector representation of that direction
+     * @author BestBearr (crumbygames12@gmail.com)
+     */
+    private static Vector getDirection(BlockFace face) {
+        int modX = face.getModX(), modY = face.getModY(), modZ = face.getModZ();
+        Vector direction = new Vector(modX, modY, modZ);
+        if (modX != 0 && modY != 0 && modZ != 0)
+            direction.normalize();
+        return direction;
+    }
 
 }
