@@ -1,5 +1,6 @@
 package com.i0dev.plugin.patchtest.object.config;
 
+import com.i0dev.plugin.patchtest.object.EnchantGlow;
 import com.i0dev.plugin.patchtest.utility.MsgUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,6 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.material.MaterialData;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,14 +20,16 @@ import java.util.Map;
 @AllArgsConstructor
 public class ConfigItemStack implements SerializableConfig {
 
-    private Material material;
-    private String displayName;
-    private List<String> lore;
-    private Map<String, Integer> enchantments;
+    protected Material material;
+    protected String displayName;
+    protected List<String> lore;
+
+    protected int data;
+    protected boolean glow;
 
     public ItemStack toItemStack() {
-        ItemStack stack = new ItemStack(material);
-        enchantments.forEach((enchantment, level) -> stack.addUnsafeEnchantment(Enchantment.getByName(enchantment), level));
+        ItemStack stack = new ItemStack(material, 1, (short) data);
+        if (glow) stack.addUnsafeEnchantment(EnchantGlow.getGlow(), 1);
         ItemMeta meta = stack.getItemMeta();
         meta.setDisplayName(MsgUtil.color(displayName));
         meta.setLore(MsgUtil.color(lore));
@@ -39,7 +43,8 @@ public class ConfigItemStack implements SerializableConfig {
         data.put("material", material.toString());
         data.put("displayName", displayName);
         data.put("lore", lore);
-        data.put("enchantments", enchantments);
+        data.put("glow", glow);
+        data.put("data", this.data);
         return data;
     }
 
@@ -47,7 +52,8 @@ public class ConfigItemStack implements SerializableConfig {
         this.material = Material.valueOf((String) map.get("material"));
         this.displayName = (String) map.get("displayName");
         this.lore = (List<String>) map.get("lore");
-        this.enchantments = (Map<String, Integer>) map.get("enchantments");
+        this.data = (int) map.get("data");
+        this.glow = (boolean) map.get("glow");
     }
 
 }
