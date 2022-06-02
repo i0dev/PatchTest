@@ -29,6 +29,7 @@ public class PatchTestPlugin extends CorePlugin {
         registerManager(SessionManager.getInstance());
         registerManager(InventoryManager.getInstance());
         registerManager(MobManager.getInstance());
+        registerManager(StorageManager.getInstance());
 
         // Hooks
         if (isPluginEnabled("PlaceholderAPI"))

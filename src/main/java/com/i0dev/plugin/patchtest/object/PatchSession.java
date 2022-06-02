@@ -4,6 +4,7 @@ import com.i0dev.plugin.patchtest.PatchTestPlugin;
 import com.i0dev.plugin.patchtest.manager.CannonManager;
 import com.i0dev.plugin.patchtest.manager.PlotManager;
 import com.i0dev.plugin.patchtest.manager.SessionManager;
+import com.i0dev.plugin.patchtest.manager.StorageManager;
 import com.i0dev.plugin.patchtest.utility.MsgUtil;
 import com.i0dev.plugin.patchtest.utility.TimeUtil;
 import com.i0dev.plugin.patchtest.utility.TitleUtil;
@@ -13,6 +14,7 @@ import lombok.ToString;
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
@@ -138,26 +140,31 @@ public class PatchSession {
     }
 
     public void end() {
-
         if (settings.isRanked()) {
+            String playersRaw = getPlayers().stream().map(HumanEntity::getName).collect(Collectors.toList()).toString();
+
+            String size = settings.getTeamSize().niceName();
+            String players = playersRaw.substring(1, playersRaw.length() - 1);
+            String time = TimeUtil.formatTimePeriod(System.currentTimeMillis() - getStartTime());
+
             getPlayers().forEach(player -> {
                 player.setHealth(0);
                 MsgUtil.msg(player, PatchTestPlugin.getPlugin().msg().getStringList("lostSession"),
-                        new Pair<>("{size}", settings.getTeamSize().toString()),
-                        new Pair<>("{players}", getPlayers().toString()),
-                        new Pair<>("{time}", TimeUtil.formatTimePeriod(System.currentTimeMillis() - getStartTime())));
+                        new Pair<>("{size}", size),
+                        new Pair<>("{players}", players),
+                        new Pair<>("{time}", time));
             });
 
 
-            ScoreEntry entry = new ScoreEntry(getCreator().getUniqueId(),
-                    players.stream()
+            ScoreEntry entry = new ScoreEntry(getCreator().getUniqueId(), getUuid(),
+                    this.players.stream()
                             .map(Entity::getUniqueId)
                             .collect(Collectors.toSet()),
                     settings.getTeamSize(),
                     System.currentTimeMillis() - getStartTime(),
                     System.currentTimeMillis());
 
-            // save
+            StorageManager.getInstance().addEntry(entry);
         }
 
         stop();

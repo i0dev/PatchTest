@@ -88,12 +88,14 @@ public class MessageConfig extends AbstractConfiguration {
 
         config.set("lostSession", Arrays.asList(
                 "",
-                "&cYour base got breached!",
+                "&c&lYour base got breached!",
                 "",
                 "&7The guardians have breached your base, you lasted:",
                 "&c&l{time}",
+                "",
                 "&7Session Player Size: &c{size}",
-                "&7Session Players: &c{players}"
+                "&7Session Players: &c{players}",
+                ""
         ));
 
         config.set("playerLoggedOffline", "&c{player}&7 has logged offline, they were removed from the session but can rejoin at any time.");
