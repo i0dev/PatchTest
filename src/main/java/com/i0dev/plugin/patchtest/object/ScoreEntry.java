@@ -10,6 +10,7 @@ import java.util.UUID;
 public class ScoreEntry {
 
     private UUID creator;
+    private UUID sessionUUID;
     private Set<UUID> players;
     private TeamSize teamSize;
     private long lengthHeld;
