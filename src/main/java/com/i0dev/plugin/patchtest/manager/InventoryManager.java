@@ -1,23 +1,24 @@
 package com.i0dev.plugin.patchtest.manager;
 
 import com.i0dev.plugin.patchtest.PatchTestPlugin;
-import com.i0dev.plugin.patchtest.object.CannonType;
-import com.i0dev.plugin.patchtest.object.PatchSession;
-import com.i0dev.plugin.patchtest.object.SessionSettings;
-import com.i0dev.plugin.patchtest.object.TeamSize;
+import com.i0dev.plugin.patchtest.object.*;
+import com.i0dev.plugin.patchtest.object.config.ConfigIndexItemStack;
+import com.i0dev.plugin.patchtest.object.config.ConfigItemStack;
 import com.i0dev.plugin.patchtest.template.AbstractManager;
 import com.i0dev.plugin.patchtest.utility.MsgUtil;
 import de.tr7zw.nbtapi.NBTItem;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.configuration.MemorySection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.Map;
 
 public class InventoryManager extends AbstractManager {
 
@@ -30,25 +31,26 @@ public class InventoryManager extends AbstractManager {
     }
 
     public Inventory getCreateInventory() {
-        Inventory inventory = Bukkit.createInventory(new CreateInventoryHolder(), 27, "Patch Session Create");
+        SimpleConfig cnf = PatchTestPlugin.getPlugin().cnf();
+        Inventory inventory = Bukkit.createInventory(new CreateInventoryHolder(), 27, MsgUtil.color(cnf.getString("createGUI.title")));
 
-        ItemStack ranked = new ItemStack(Material.DIAMOND_SWORD);
-        ItemMeta rankedMeta = ranked.getItemMeta();
-        rankedMeta.setDisplayName("Ranked Gamemode");
-        ranked.setItemMeta(rankedMeta);
-        NBTItem nbtItem = new NBTItem(ranked);
-        nbtItem.setBoolean("createRankedSession", true);
-        ranked = nbtItem.getItem();
-        inventory.setItem(11, ranked);
+        for (int i = 0; i < 27; i++) {
+            inventory.setItem(i, new ConfigItemStack(cnf.getConfigurationSection("createGUI.borderGlass").getValues(true)).toItemStack());
+        }
 
-        ItemStack sandbox = new ItemStack(Material.DIAMOND_SWORD);
-        ItemMeta sandboxMeta = sandbox.getItemMeta();
-        sandboxMeta.setDisplayName("Sandbox Gamemode");
-        sandbox.setItemMeta(sandboxMeta);
-        NBTItem nbtItemSandbox = new NBTItem(sandbox);
-        nbtItemSandbox.setBoolean("createSandboxSession", true);
-        sandbox = nbtItemSandbox.getItem();
-        inventory.setItem(15, sandbox);
+        ConfigIndexItemStack ranked = new ConfigIndexItemStack(cnf.getConfigurationSection("createGUI.rankedItem").getValues(true));
+        ItemStack rankedItem = ranked.toItemStack();
+        NBTItem rankedNBT = new NBTItem(rankedItem);
+        rankedNBT.setBoolean("createRankedSession", true);
+        rankedItem = rankedNBT.getItem();
+        inventory.setItem(ranked.getIndex(), rankedItem);
+
+        ConfigIndexItemStack sandbox = new ConfigIndexItemStack(cnf.getConfigurationSection("createGUI.sandboxItem").getValues(true));
+        ItemStack sandboxItem = sandbox.toItemStack();
+        NBTItem sandboxNBT = new NBTItem(sandboxItem);
+        sandboxNBT.setBoolean("createSandboxSession", true);
+        sandboxItem = sandboxNBT.getItem();
+        inventory.setItem(sandbox.getIndex(), sandboxItem);
 
         return inventory;
     }

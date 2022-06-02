@@ -88,7 +88,7 @@ public class StorageManager extends AbstractManager {
                                 "INSERT INTO ranked_scores_sub_users(sessionUUID, playerUUID)" +
                                 "VALUES ('%s', '%s')",
                         entry.getSessionUUID(),
-                        uuid.toString()
+                        uuid
                 )).execute();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
