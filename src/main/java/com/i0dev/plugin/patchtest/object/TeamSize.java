@@ -17,4 +17,10 @@ public enum TeamSize {
     public int getSize() {
         return size;
     }
+
+    public String niceName() {
+        char first = name().charAt(0);
+        String rest = name().substring(1);
+        return first + rest.toLowerCase();
+    }
 }
