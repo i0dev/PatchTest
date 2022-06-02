@@ -11,7 +11,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 /**
- * Storage manager
+ * Storage manager, using SQLite as main storage system.
  *
  * @author Andrew Magnuson
  */
@@ -22,29 +22,23 @@ public class StorageManager extends AbstractManager {
 
     private Connection connection;
 
+    @SneakyThrows
     @Override
     public void initialize() {
-        connect();
+        connection = DriverManager.getConnection("jdbc:sqlite:" + PatchTestPlugin.getPlugin().getDataFolder() + "/storage.db");
+        System.out.println("Connected to SQLite Database");
         createTables();
     }
 
+    @SneakyThrows
     @Override
     public void deinitialize() {
-        disconnect();
-    }
-
-    @SneakyThrows
-    public void connect() {
-        //    Class.forName("org.sqlite.JDBC");
-        connection = DriverManager.getConnection("jdbc:sqlite:" + PatchTestPlugin.getPlugin().getDataFolder() + "/storage.db");
-        System.out.println("Connected to SQLite");
-    }
-
-    @SneakyThrows
-    public void disconnect() {
         if (connection != null) connection.close();
     }
 
+    /**
+     * This method will create the necessary tables in order for the storage system to work properly.
+     */
     @SneakyThrows
     public void createTables() {
         connection.prepareStatement("" +
@@ -69,6 +63,11 @@ public class StorageManager extends AbstractManager {
     }
 
 
+    /**
+     * Adds a new {@link ScoreEntry} to the sql database
+     *
+     * @param entry The entry to add.
+     */
     @SneakyThrows
     public void addEntry(ScoreEntry entry) {
         connection.prepareStatement(String.format(
