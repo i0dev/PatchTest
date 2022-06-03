@@ -19,11 +19,11 @@ public class MonsterSpawnTime implements SerializableConfig {
     EntityType entityType;
     int health;
     List<PotionEffect> potionEffects;
-    ConfigItemStack helmet;
-    ConfigItemStack chestplate;
-    ConfigItemStack leggings;
-    ConfigItemStack boots;
-    ConfigItemStack sword;
+    ConfigEnchantedItemStack helmet;
+    ConfigEnchantedItemStack chestplate;
+    ConfigEnchantedItemStack leggings;
+    ConfigEnchantedItemStack boots;
+    ConfigEnchantedItemStack sword;
 
 
     @Override
@@ -58,11 +58,11 @@ public class MonsterSpawnTime implements SerializableConfig {
             potionEffects.add(new PotionEffect(stringObjectMap));
         }
 
-        this.helmet = new ConfigItemStack((Map<String, Object>) map.get("helmet"));
-        this.chestplate = new ConfigItemStack((Map<String, Object>) map.get("chestplate"));
-        this.leggings = new ConfigItemStack((Map<String, Object>) map.get("leggings"));
-        this.boots = new ConfigItemStack((Map<String, Object>) map.get("boots"));
-        this.sword = new ConfigItemStack((Map<String, Object>) map.get("sword"));
+        this.helmet = new ConfigEnchantedItemStack((Map<String, Object>) map.get("helmet"));
+        this.chestplate = new ConfigEnchantedItemStack((Map<String, Object>) map.get("chestplate"));
+        this.leggings = new ConfigEnchantedItemStack((Map<String, Object>) map.get("leggings"));
+        this.boots = new ConfigEnchantedItemStack((Map<String, Object>) map.get("boots"));
+        this.sword = new ConfigEnchantedItemStack((Map<String, Object>) map.get("sword"));
     }
 
 }
