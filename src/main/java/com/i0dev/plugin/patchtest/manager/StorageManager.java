@@ -8,6 +8,7 @@ import lombok.SneakyThrows;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -72,7 +73,7 @@ public class StorageManager extends AbstractManager {
     public void addEntry(ScoreEntry entry) {
         connection.prepareStatement(String.format(
                 "INSERT INTO ranked_scores (creatorUUID, sessionUUID, teamSize, lengthHeld, timeEnded)" +
-                        "VALUES ('%s', '%s', '%s', %o, %o);",
+                        "VALUES ('%s', '%s', '%s', %s, %s);",
                 entry.getCreator().toString(),
                 entry.getSessionUUID().toString(),
                 entry.getTeamSize().name(),
@@ -94,4 +95,10 @@ public class StorageManager extends AbstractManager {
             }
         });
     }
+
+    @SneakyThrows
+    public ResultSet executeQuery(String query) {
+        return connection.prepareStatement(query).executeQuery();
+    }
+
 }
