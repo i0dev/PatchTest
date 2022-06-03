@@ -20,24 +20,33 @@ public class TimeUtil {
      * @return A formatted string of the time period.
      */
     public static String formatTimePeriod(long timePeriod) {
-        long milliseconds = timePeriod;
-        String ret = "";
+        long millis = timePeriod;
 
-        long days = TimeUnit.MILLISECONDS.toDays(milliseconds);
-        milliseconds -= TimeUnit.DAYS.toMillis(days);
-        long hours = TimeUnit.MILLISECONDS.toHours(milliseconds);
-        milliseconds -= TimeUnit.HOURS.toMillis(hours);
-        long minutes = TimeUnit.MILLISECONDS.toMinutes(milliseconds);
-        milliseconds -= TimeUnit.MINUTES.toMillis(minutes);
-        long seconds = TimeUnit.MILLISECONDS.toSeconds(milliseconds);
+        String output = "";
 
+        long days = TimeUnit.MILLISECONDS.toDays(millis);
+        millis -= TimeUnit.DAYS.toMillis(days);
+        long hours = TimeUnit.MILLISECONDS.toHours(millis);
+        millis -= TimeUnit.HOURS.toMillis(hours);
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
+        millis -= TimeUnit.MINUTES.toMillis(minutes);
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
 
-        ret += days == 1 ? days + " day " : days > 1 ? days + " days " : "";
-        ret += hours == 1 ? hours + " hour " : hours > 1 ? hours + " hours " : "";
-        ret += minutes == 1 ? minutes + " minute " : minutes > 1 ? minutes + " minutes " : "";
-        ret += seconds == 1 ? minutes + " second " : seconds > 1 ? minutes + " seconds " : "";
+        if (days > 1) output += days + " days ";
+        else if (days == 1) output += days + " day ";
 
-        return ret.isEmpty() ? "0 seconds" : StringUtils.trim(ret);
+        if (hours > 1) output += hours + " hours ";
+        else if (hours == 1) output += hours + " hour ";
+
+        if (minutes > 1) output += minutes + " minutes ";
+        else if (minutes == 1) output += minutes + " minute ";
+
+        if (seconds > 1) output += seconds + " seconds ";
+        else if (seconds == 1) output += seconds + " second ";
+
+        if (output.isEmpty()) return "0 seconds";
+
+        return StringUtils.trim(output);
     }
 
 }
