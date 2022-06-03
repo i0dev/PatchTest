@@ -1,8 +1,8 @@
 package com.i0dev.plugin.patchtest.config;
 
 import com.i0dev.plugin.patchtest.object.CannonType;
-import com.i0dev.plugin.patchtest.object.SessionSettings;
 import com.i0dev.plugin.patchtest.object.TeamSize;
+import com.i0dev.plugin.patchtest.object.config.ConfigIndexAmountItemStack;
 import com.i0dev.plugin.patchtest.object.config.ConfigIndexItemStack;
 import com.i0dev.plugin.patchtest.object.config.ConfigItemStack;
 import com.i0dev.plugin.patchtest.template.AbstractConfiguration;
@@ -26,8 +26,8 @@ public class GeneralConfig extends AbstractConfiguration {
         config.set("countdownLengthSeconds", 20);
         config.set("patchWorldName", "world");
         config.set("patchKitName", "patch");
-        config.set("adjustTimeRandomHigherBound", 50);
-        config.set("adjustTimeRandomLowerBound", 20);
+        config.set("adjustTimeRandomHigherBound", 20);
+        config.set("adjustTimeRandomLowerBound", 10);
         config.set("cannonSpeed", 3);
 
         config.set("countdownSubtitle", "&7seconds remaining...");
@@ -100,6 +100,93 @@ public class GeneralConfig extends AbstractConfiguration {
                 15
 
         ).serialize());
+
+
+        config.set("leaderboardGUI.borderGlass", new ConfigItemStack(
+                Material.STAINED_GLASS_PANE,
+                "&f",
+                new ArrayList<>(),
+                15,
+                true
+
+        ).serialize());
+
+        config.set("leaderboardGUI.soloLeaderboardItem", new ConfigIndexAmountItemStack(
+                Material.DIAMOND_HELMET,
+                "&c&lSolos",
+                Arrays.asList(
+                        "",
+                        "&7Click to go to the leaderboard for the &csolo&7 session size"
+                ),
+                0,
+                true,
+                10,
+                1
+        ).serialize());
+        config.set("leaderboardGUI.duoLeaderboardItem", new ConfigIndexAmountItemStack(
+                Material.DIAMOND_HELMET,
+                "&c&lDuos",
+                Arrays.asList(
+                        "",
+                        "&7Click to go to the leaderboard for the &cduo&7 session size"
+                ),
+                0,
+                true,
+                12,
+                2
+        ).serialize());
+        config.set("leaderboardGUI.squadLeaderboardItem", new ConfigIndexAmountItemStack(
+                Material.DIAMOND_HELMET,
+                "&c&lSquads",
+                Arrays.asList(
+                        "",
+                        "&7Click to go to the leaderboard for the &csquad&7 session size"
+                ),
+                0,
+                true,
+                14,
+                5
+        ).serialize());
+        config.set("leaderboardGUI.teamLeaderboardItem", new ConfigIndexAmountItemStack(
+                Material.DIAMOND_HELMET,
+                "&c&lTeams",
+                Arrays.asList(
+                        "",
+                        "&7Click to go to the leaderboard for the &cteam&7 session size"
+                ),
+                0,
+                true,
+                16,
+                10
+        ).serialize());
+
+        Map<String, Integer> positionIndexMap = new LinkedHashMap<>();
+        positionIndexMap.put("1", 13);
+        positionIndexMap.put("2", 21);
+        positionIndexMap.put("3", 22);
+        positionIndexMap.put("4", 23);
+        positionIndexMap.put("5", 29);
+        positionIndexMap.put("6", 30);
+        positionIndexMap.put("7", 31);
+        positionIndexMap.put("8", 32);
+        positionIndexMap.put("9", 33);
+        config.set("leaderboardGUI.positionIndexMap", positionIndexMap);
+        config.set("leaderboardGUI.mainTitle", "&c&lLeaderboards");
+        config.set("leaderboardGUI.specificTitle", "&c&lLeaderboard for {size}");
+
+        config.set("leaderboardGUI.positionTitle", "&4&l#{pos} &c- {player}");
+
+        config.set("leaderboardGUI.positionLore", Arrays.asList(
+                "",
+                "&c&lTime Held:",
+                "&f{time}",
+                "",
+                "&c&lTeam Members:",
+                "{players}",
+                "",
+                "&8Date: &7{date}"
+        ));
+        config.set("leaderboardGUI.positionLorePlayerEntry", " &4* &7{player}");
 
 
     }
