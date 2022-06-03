@@ -22,6 +22,14 @@ commands:
       - obbyfill
     description: Opens an inventory full of obsidian.
     usage: /obby
+  leaderboard:
+    aliases:
+      - lb
+      - leaderb
+      - stats
+    description: Opens an leaderboard GUI
+    usage: /leaderboard
+
 
 permissions:
   patchtest.create:
@@ -50,4 +58,7 @@ permissions:
     default: op
   patchtest.obby:
     description: Use the /obby command
+    default: not op
+  patchtest.leaderboard:
+    description: Use the /leaderboard
     default: not op
