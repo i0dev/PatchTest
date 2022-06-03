@@ -5,9 +5,13 @@ import com.i0dev.plugin.patchtest.object.PatchSession;
 import com.i0dev.plugin.patchtest.object.config.MonsterSpawnTime;
 import com.i0dev.plugin.patchtest.template.AbstractManager;
 import com.i0dev.plugin.patchtest.utility.MsgUtil;
+import de.tr7zw.nbtapi.NBTCompound;
+import de.tr7zw.nbtapi.NBTEntity;
+import de.tr7zw.nbtinjector.NBTInjector;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Zombie;
@@ -19,6 +23,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Map;
+import java.util.UUID;
 
 public class MobManager extends AbstractManager {
 
@@ -26,15 +31,36 @@ public class MobManager extends AbstractManager {
     private static final MobManager instance = new MobManager();
 
     BukkitTask mob;
+    BukkitTask tp;
 
 
     @Override
     public void initialize() {
         setListener(true);
         mob = Bukkit.getScheduler().runTaskTimerAsynchronously(PatchTestPlugin.getPlugin(), taskSpawnMobs, 20L, 20L);
+        tp = Bukkit.getScheduler().runTaskTimerAsynchronously(PatchTestPlugin.getPlugin(), taskTpMobs, 10L * 20L, 10L * 20L);
     }
 
     long lastSpawnTime = 0;
+
+    private final Runnable taskTpMobs = () -> {
+        World world = Bukkit.getWorld(PatchTestPlugin.getWorldName());
+        world.getEntities().stream().filter(entity -> {
+            NBTEntity nbtEntity = new NBTEntity(entity);
+            return nbtEntity.hasKey("session");
+        }).forEach(entity -> {
+            NBTEntity nbtEntity = new NBTEntity(entity);
+            Player target = Bukkit.getPlayer(UUID.fromString(nbtEntity.getString("target")));
+            if (target.getLocation().distance(entity.getLocation()) > 20) {
+                Bukkit.getScheduler().runTask(PatchTestPlugin.getPlugin(), () -> {
+                    entity.teleport(target.getLocation());
+                    ((Monster) entity).setTarget(target);
+                });
+            }
+        });
+
+    };
+
     private final Runnable taskSpawnMobs = () -> {
         for (PatchSession session : SessionManager.getInstance().getSessions()) {
             long timeStarted = session.getStartTime();
@@ -51,7 +77,7 @@ public class MobManager extends AbstractManager {
                             lastSpawnTime = System.currentTimeMillis();
                             for (Player player : session.getPlayers()) {
                                 Location spawnLoc = player.getLocation();
-                                spawnLoc.add(0, 10, 0);
+                                spawnLoc.add(0, 1, 0);
                                 for (int i = 0; i < amountPerPlayer; i++) {
                                     Monster mob = (Monster) session.getPlot().getWorld().spawnEntity(spawnLoc, mst.getEntityType());
                                     mob.setMaxHealth(mst.getHealth());
@@ -67,8 +93,9 @@ public class MobManager extends AbstractManager {
                                         ((Zombie) mob).setVillager(false);
                                     }
 
-                                    mst.getPotionEffects().forEach(pot -> mob.addPotionEffect(new PotionEffect(PotionEffectType.getByName(pot.getPotionEffect()), pot.getDuration(), pot.getLevel(), true, true)));
-
+                                    for (com.i0dev.plugin.patchtest.object.config.PotionEffect potionEffect : mst.getPotionEffects()) {
+                                        mob.addPotionEffect(new PotionEffect(PotionEffectType.getByName(potionEffect.getPotionEffect()), potionEffect.getDuration(), potionEffect.getLevel(), true, true));
+                                    }
                                     EntityEquipment armor = mob.getEquipment();
 
                                     armor.setHelmet(mst.getHelmet().toItemStack());
@@ -82,6 +109,11 @@ public class MobManager extends AbstractManager {
                                     armor.setLeggingsDropChance(0);
                                     armor.setBootsDropChance(0);
                                     armor.setItemInHandDropChance(0);
+
+                                    mob = (Monster) NBTInjector.patchEntity(mob);
+                                    NBTCompound comp = NBTInjector.getNbtData(mob);
+                                    comp.setString("target", player.getUniqueId().toString());
+                                    comp.setString("session", session.getUuid().toString());
                                 }
                             }
                         });
