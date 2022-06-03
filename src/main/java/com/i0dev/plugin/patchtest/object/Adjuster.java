@@ -58,6 +58,7 @@ public class Adjuster {
     }
 
     private int top = 253;
+    private int os_offset = 5;
     private int counter_top;
     private int counter_history;
 
@@ -69,26 +70,30 @@ public class Adjuster {
 
     public Location getMostEfficientLocation() {
         if (firstShot) return plot.getDefaultShootLocation();
+        if (session.getSettings().getCannonType().equals(CannonType.OS_AP_NUKE))
+            top = top >= 250 ? top - os_offset : top;
 
-        if (counter_top >= 5) {
+        if (counter_top >= 6) {
             Location newLoc = activeLocation.clone();
             newLoc.setY(top);
             counter_top = 0;
             top -= 2;
             return newLoc;
         }
-        if (counter_history >= 6) {
+        if (counter_history >= 4) {
             List<Location> historyCopy = new ArrayList<>(previousLocations);
             Collections.shuffle(historyCopy);
             Location newLoc = historyCopy.get(0);
             newLoc.subtract(0, 2, 0);
+            counter_history = 0;
+            previousLocations.clear();
             return newLoc;
         }
 
 
         List<Location> frontWallBlocks = new ArrayList<>();
         Cuboid walls = plot.getWallsCuboid();
-        for (int y = 205; y < walls.getYMax(); y++) {
+        for (int y = 160; y < walls.getYMax(); y++) {
             for (int x = (int) walls.getXMin(); x < walls.getXMax(); x++) {
                 frontWallBlocks.add(new Location(Bukkit.getWorld(PatchTestPlugin.getPlugin().cnf().getString("patchWorldName")), x, y, plot.getWallsCuboid().getZMax()));
             }

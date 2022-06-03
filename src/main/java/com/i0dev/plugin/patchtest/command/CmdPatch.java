@@ -51,9 +51,6 @@ public class CmdPatch extends AbstractCommand {
                 case "remove":
                     remove(sender, args);
                     break;
-                case "debug":
-                    debug(sender, args);
-                    break;
                 case "join":
                     join(sender, args);
                     break;
@@ -69,12 +66,6 @@ public class CmdPatch extends AbstractCommand {
             }
         }
     }
-
-    private void debug(CommandSender sender, String[] args) {
-        System.out.println("session:" + SessionManager.getInstance().getSession(((Player) sender)));
-        System.out.println("plot:" + SessionManager.getInstance().getSession(((Player) sender)).getPlot());
-    }
-
     private void rejoin(CommandSender sender, String[] args) {
         if (!hasPermission(sender, "rejoin")) {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("noPermission"));

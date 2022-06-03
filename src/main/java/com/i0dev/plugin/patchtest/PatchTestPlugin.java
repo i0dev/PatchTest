@@ -1,5 +1,6 @@
 package com.i0dev.plugin.patchtest;
 
+import com.i0dev.plugin.patchtest.command.CmdLeaderboard;
 import com.i0dev.plugin.patchtest.command.CmdObby;
 import com.i0dev.plugin.patchtest.config.GeneralConfig;
 import com.i0dev.plugin.patchtest.config.MessageConfig;
@@ -42,6 +43,7 @@ public class PatchTestPlugin extends CorePlugin {
         // Commands
         registerCommand(CmdPatch.getInstance(), "patch");
         registerCommand(CmdObby.getInstance(), "obby");
+        registerCommand(CmdLeaderboard.getInstance(), "leaderboard");
 
         setCommandsForHelp(
                 "patch help",

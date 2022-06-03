@@ -11,7 +11,9 @@ import com.i0dev.plugin.patchtest.utility.TitleUtil;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Instrument;
+import org.bukkit.Note;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
@@ -19,7 +21,9 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Getter
@@ -146,6 +150,7 @@ public class PatchSession {
             String size = settings.getTeamSize().niceName();
             String players = playersRaw.substring(1, playersRaw.length() - 1);
             String time = TimeUtil.formatTimePeriod(System.currentTimeMillis() - getStartTime());
+
 
             getPlayers().forEach(player -> {
                 player.setHealth(0);

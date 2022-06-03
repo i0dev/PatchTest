@@ -6,7 +6,8 @@ import lombok.Data;
 import java.util.Set;
 import java.util.UUID;
 
-@Data@AllArgsConstructor
+@Data
+@AllArgsConstructor
 public class ScoreEntry {
 
     private UUID creator;

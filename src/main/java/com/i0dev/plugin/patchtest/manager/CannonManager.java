@@ -132,9 +132,9 @@ public class CannonManager extends AbstractManager {
         });
 
         // spawn the slabbust
-        this.compute(50, i -> {
-            first.add(this.setFuse(world.spawnEntity(location, EntityType.PRIMED_TNT), 4 + 6));
-        });
+//        this.compute(50, i -> {
+//            first.add(this.setFuse(world.spawnEntity(location, EntityType.PRIMED_TNT), 4 + 6));
+//        });
 
         // delay for ooe
         // spawn the sand
