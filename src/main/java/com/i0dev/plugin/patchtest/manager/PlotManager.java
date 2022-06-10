@@ -3,14 +3,18 @@ package com.i0dev.plugin.patchtest.manager;
 import com.i0dev.plugin.patchtest.PatchTestPlugin;
 import com.i0dev.plugin.patchtest.object.Cuboid;
 import com.i0dev.plugin.patchtest.object.PatchPlot;
-import com.i0dev.plugin.patchtest.object.PatchSession;
+import com.i0dev.plugin.patchtest.object.Session;
+import com.i0dev.plugin.patchtest.object.SessionType;
 import com.i0dev.plugin.patchtest.template.AbstractManager;
 import com.i0dev.plugin.patchtest.utility.MsgUtil;
 import lombok.Getter;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 public class PlotManager extends AbstractManager {
@@ -44,9 +48,20 @@ public class PlotManager extends AbstractManager {
     }
 
     @EventHandler
+    public void onDeath(PlayerDeathEvent e) {
+        Session session = SessionManager.getInstance().getSession(e.getEntity());
+        if (session == null)
+            return;
+
+
+        MsgUtil.msg(e.getEntity(), PatchTestPlugin.getMsg("session.tpBackOnDeath"));
+        MsgUtil.msgAll(e.getEntity().getDisplayName() + " has been slain by" + e.getEntity().getKiller().getDisplayName());
+    }
+
+    @EventHandler
     public void onPlayerMove(PlayerMoveEvent e) {
         if (e.getFrom().getX() != e.getTo().getX() || e.getFrom().getZ() != e.getTo().getZ()) {
-            PatchSession session = SessionManager.getInstance().getSession(e.getPlayer());
+            Session session = SessionManager.getInstance().getSession(e.getPlayer());
             if (session == null) return;
             if (session.isStarted() || session.isInCountdown()) {
                 if (!session.getPlot().getAllowedMoveCuboid().contains(e.getTo())) {
@@ -59,11 +74,15 @@ public class PlotManager extends AbstractManager {
 
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent e) {
-        if (e.getPlayer().hasPermission(PatchTestPlugin.PERMISSION_PREFIX + ".admin")) return;
-        PatchSession session = SessionManager.getInstance().getSession(e.getPlayer());
+        Session session = SessionManager.getInstance().getSession(e.getPlayer());
         if (session == null) return;
+        if (session.getType() == SessionType.VERSUS && session.getVersusParty().getMembers().contains(e.getPlayer().getUniqueId())) {
+            MsgUtil.msg(e.getPlayer(), PatchTestPlugin.getMsg("session.cantDoThatWhileRaiding"));
+            e.setCancelled(true);
+        }
+
         if (!session.isStarted()) {
-            MsgUtil.msg(e.getPlayer(), PatchTestPlugin.getMsg("waitForSessionToStartToPlaceBlocks"));
+            MsgUtil.msg(e.getPlayer(), PatchTestPlugin.getMsg("session.waitForSessionToStart"));
             e.setCancelled(true);
 
         } else if (!session.getPlot().getAllowedMoveCuboid().contains(e.getBlock().getLocation())) {
@@ -73,29 +92,34 @@ public class PlotManager extends AbstractManager {
     }
 
     @EventHandler
-    public void onBlockBreak(BlockBreakEvent e) {
-        if (e.getPlayer().hasPermission(PatchTestPlugin.PERMISSION_PREFIX + ".admin")) return;
-        PatchSession session = SessionManager.getInstance().getSession(e.getPlayer());
+    public void onFight(EntityDamageByEntityEvent e) {
+        if (!(e.getDamager() instanceof Player)) return;
+        Session session = SessionManager.getInstance().getSession(((Player) e.getDamager()));
         if (session == null) return;
         if (!session.isStarted()) {
-            MsgUtil.msg(e.getPlayer(), PatchTestPlugin.getMsg("waitForSessionToStartToBreakBlocks"));
+            MsgUtil.msg(e.getDamager(), PatchTestPlugin.getMsg("session.waitForSessionToStart"));
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onBlockBreak(BlockBreakEvent e) {
+        Session session = SessionManager.getInstance().getSession(e.getPlayer());
+        if (session == null) return;
+
+        if (session.getType() == SessionType.VERSUS && session.getVersusParty().getMembers().contains(e.getPlayer().getUniqueId())) {
+            MsgUtil.msg(e.getPlayer(), PatchTestPlugin.getMsg("session.cantDoThatWhileRaiding"));
+            e.setCancelled(true);
+        }
+
+        if (!session.isStarted()) {
+            MsgUtil.msg(e.getPlayer(), PatchTestPlugin.getMsg("session.waitForSessionToStart"));
             e.setCancelled(true);
         } else if (!session.getPlot().getAllowedMoveCuboid().contains(e.getBlock().getLocation())) {
             MsgUtil.msg(e.getPlayer(), PatchTestPlugin.getMsg("cantPlaceBlocksOutsidePlot"));
             e.setCancelled(true);
         }
-
     }
-
-//    @EventHandler
-//    public void onDeath(EntityDeathEvent e) {
-//        if (!(e.getEntity() instanceof Player)) return;
-//        if (!e.getEntity().getLocation().getWorld().getName().equals(PatchTestPlugin.getWorldName())) return;
-//        Player player = (Player) e.getEntity();
-//        if (SessionManager.getInstance().isPlayerInSession(player)) {
-//            MsgUtil.msg(e.getEntity(), PatchTestPlugin.getMsg("goBackToSessionOnDeath"));
-//        }
-//    }
 
     @EventHandler
     public void onFallDamage(EntityDamageEvent e) {
