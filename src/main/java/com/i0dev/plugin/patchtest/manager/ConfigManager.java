@@ -8,6 +8,11 @@ import lombok.Getter;
 import java.io.*;
 import java.nio.charset.Charset;
 
+/**
+ * Acts as a config manager for the configuration system in the plugin
+ *
+ * @author NOT ME - need to find.
+ */
 public class ConfigManager extends AbstractManager {
 
     @Getter
@@ -171,9 +176,9 @@ public class ConfigManager extends AbstractManager {
 
     }
 
-    /*
+    /**
      * Read file and make comments SnakeYAML friendly
-     * @param filePath - Path to file
+     * @param file - file
      * @return - File as Input Stream
      */
     public InputStream getConfigContent(File file) {
@@ -218,7 +223,7 @@ public class ConfigManager extends AbstractManager {
 
     }
 
-    /*
+    /**
      * Get comments from file
      * @param file - File
      * @return - Comments number
@@ -253,7 +258,7 @@ public class ConfigManager extends AbstractManager {
 
     }
 
-    /*
+    /**
      * Get config content from file
      * @param filePath - Path to file
      * @return - readied file
@@ -335,7 +340,7 @@ public class ConfigManager extends AbstractManager {
     }
 
 
-    /*
+    /**
      * Saves configuration to file
      * @param configString - Config string
      * @param file - Config file
@@ -359,7 +364,7 @@ public class ConfigManager extends AbstractManager {
         return PatchTestPlugin.getPlugin().getDescription().getName();
     }
 
-    /*
+    /**
      * Copy resource from Input Stream to file
      * @param resource - Resource from .jar
      * @param file - File to write

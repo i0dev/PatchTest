@@ -94,6 +94,12 @@ public class StorageManager extends AbstractManager {
         });
     }
 
+    /**
+     * Executes a specified query to the SQL database
+     *
+     * @param query The query to execute.
+     * @return The results of the query.
+     */
     @SneakyThrows
     public ResultSet executeQuery(String query) {
         return connection.prepareStatement(query).executeQuery();

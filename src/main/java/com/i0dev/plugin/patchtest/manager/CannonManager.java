@@ -78,9 +78,9 @@ public class CannonManager extends AbstractManager {
         });
 
         // spawn the slabbust
-        this.compute(50, i -> {
-            first.add(this.setFuse(world.spawnEntity(location, EntityType.PRIMED_TNT), 4 + 6));
-        });
+//        this.compute(50, i -> {
+//            first.add(this.setFuse(world.spawnEntity(location, EntityType.PRIMED_TNT), 4 + 6));
+//        });
 
         // delay for ooe
         // spawn the sand
@@ -212,9 +212,9 @@ public class CannonManager extends AbstractManager {
         });
 
         // spawn the slabbust
-        this.compute(50, i -> {
-            first.add(this.setFuse(world.spawnEntity(location, EntityType.PRIMED_TNT), 4 + 6));
-        });
+//        this.compute(50, i -> {
+//            first.add(this.setFuse(world.spawnEntity(location, EntityType.PRIMED_TNT), 4 + 6));
+//        });
 
         // delay for ooe
         // spawn the sand
@@ -272,18 +272,19 @@ public class CannonManager extends AbstractManager {
      *
      * @param entity The entity to set velocity to
      * @param vec    The velocity vector.
-     * @author COMING SOON, either bears or i0s
+     * @author
      */
     @SneakyThrows
     private void setVelocity(Entity entity, Vector vec) {
-        //bear
+        //Author: bear
         net.minecraft.server.v1_8_R3.Entity ent = ((org.bukkit.craftbukkit.v1_8_R3.entity.CraftEntity) entity).getHandle();
         ent.motX += vec.getX();
         ent.motY += vec.getY();
         ent.motZ += vec.getZ();
 
-        //i0
+        // Need to make it so it's not strict to this specific version of nms & craftbukkit
 
+        //Author: i0
 //        Object craftEntity = NMSUtil.getOBCClass("entity.CraftEntity").cast(entity);
 //        Object handle = craftEntity.getClass().getMethod("getHandle").invoke(craftEntity);
 //

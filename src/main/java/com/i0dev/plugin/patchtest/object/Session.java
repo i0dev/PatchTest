@@ -21,7 +21,6 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -34,8 +33,8 @@ public class Session {
 
     // main
     private UUID uuid;
-    private Party party;
-    private Party versusParty;
+    private Party defendingParty;
+    private Party attackingParty;
     private SessionType type;
     private PatchPlot plot;
     private Adjuster adjuster;
@@ -70,13 +69,13 @@ public class Session {
 
     public Session(Party party, SessionType type) {
         this.uuid = UUID.randomUUID();
-        this.party = party;
+        this.defendingParty = party;
         this.type = type;
         this.teamSize = TeamSize.SOLO;
         this.cannonSpeed = PatchTestPlugin.getPlugin().cnf().getInt("defaultCannonSpeed");
         this.cannonType = type == SessionType.RANKED ? CannonType.valueOf(PatchTestPlugin.getPlugin().cnf().getString("rankedSettings.cannonType")) : CannonType.NUKE;
 
-        this.versusParty = null;
+        this.attackingParty = null;
         this.startTimeMillis = 0;
         this.lastCountdownMessageSent = 0;
         this.startedCountdownTime = 0;
@@ -93,14 +92,14 @@ public class Session {
     public Set<Player> getSessionPlayers() {
         Set<Player> ret = new HashSet<>();
 
-        party.getMembers().forEach(uuid1 -> {
+        defendingParty.getMembers().forEach(uuid1 -> {
             Player player = Bukkit.getPlayer(uuid1);
             if (player == null) return;
             ret.add(player);
         });
 
-        if (versusParty != null) {
-            versusParty.getMembers().forEach(uuid1 -> {
+        if (attackingParty != null) {
+            attackingParty.getMembers().forEach(uuid1 -> {
                 Player player = Bukkit.getPlayer(uuid1);
                 if (player == null) return;
                 ret.add(player);
@@ -137,14 +136,14 @@ public class Session {
             } else {
                 long secondsRemaining = (startedCountdownTime + (countdownLengthSeconds * 1000L) - System.currentTimeMillis()) / 1000L;
                 if (type == SessionType.VERSUS)
-                    getVersusParty().getMembers().forEach(uuid1 -> {
+                    getAttackingParty().getMembers().forEach(uuid1 -> {
                         Player player = Bukkit.getPlayer(uuid1);
                         if (player == null) return;
                         player.playNote(player.getLocation(), Instrument.PIANO, Note.natural(1, Note.Tone.F));
                         TitleUtil.sendTitle(player, 3, 15, 3, cnf.getString("countdownTitle").replace("{sec}", secondsRemaining + ""), cnf.getString("countdownSubtitleAttack"));
                     });
 
-                getParty().getMembers().forEach(uuid1 -> {
+                getDefendingParty().getMembers().forEach(uuid1 -> {
                     Player player = Bukkit.getPlayer(uuid1);
                     if (player == null) return;
                     player.playNote(player.getLocation(), Instrument.PIANO, Note.natural(1, Note.Tone.F));
@@ -164,10 +163,10 @@ public class Session {
                     Bukkit.getScheduler().runTask(PatchTestPlugin.getPlugin(), () -> PatchTestPlugin.getPlugin().getServer().dispatchCommand(Bukkit.getConsoleSender(), "kit " + PatchTestPlugin.getPlugin().cnf().get("patchKitName") + " " + player.getName()));
                 });
             } else if (type == SessionType.RANKED) {
-                this.teamSize = SessionManager.getInstance().getTeamSize(party);
+                this.teamSize = SessionManager.getInstance().getTeamSize(defendingParty);
                 this.cannonSpeed = PatchTestPlugin.getPlugin().cnf().getInt("rankedSettings.teamSizeCannonSpeedMap." + teamSize.name());
 
-                party.getMembers().forEach(uuid1 -> {
+                defendingParty.getMembers().forEach(uuid1 -> {
                     Player player = Bukkit.getPlayer(uuid1);
                     if (player == null) return;
                     MsgUtil.msg(player, PatchTestPlugin.getMsg("session.rankedSessionStarting"));
@@ -175,7 +174,7 @@ public class Session {
                     Bukkit.getScheduler().runTask(PatchTestPlugin.getPlugin(), () -> PatchTestPlugin.getPlugin().getServer().dispatchCommand(Bukkit.getConsoleSender(), "kit " + PatchTestPlugin.getPlugin().cnf().get("patchKitName") + " " + player.getName()));
                 });
             } else {
-                party.getMembers().forEach(uuid1 -> {
+                defendingParty.getMembers().forEach(uuid1 -> {
                     Player player = Bukkit.getPlayer(uuid1);
                     if (player == null) return;
                     MsgUtil.msg(player, PatchTestPlugin.getMsg("session.sandboxSessionStarting"));
@@ -205,7 +204,7 @@ public class Session {
             });
 
             ScoreEntry entry = new ScoreEntry(this.uuid,
-                    this.party.getMembers(),
+                    this.defendingParty.getMembers(),
                     this.teamSize,
                     System.currentTimeMillis() - startTimeMillis,
                     System.currentTimeMillis());
@@ -213,14 +212,14 @@ public class Session {
             StorageManager.getInstance().addEntry(entry);
         } else if (type == SessionType.VERSUS) {
 
-            String playersRaw = getParty().getMembers().stream().map(uuid1 -> Bukkit.getPlayer(uuid1).getName()).collect(Collectors.toList()).toString();
+            String playersRaw = getDefendingParty().getMembers().stream().map(uuid1 -> Bukkit.getPlayer(uuid1).getName()).collect(Collectors.toList()).toString();
             String players = playersRaw.substring(1, playersRaw.length() - 1);
 
-            String enemyPlayersRaw = getVersusParty().getMembers().stream().map(uuid1 -> Bukkit.getPlayer(uuid1).getName()).collect(Collectors.toList()).toString();
+            String enemyPlayersRaw = getAttackingParty().getMembers().stream().map(uuid1 -> Bukkit.getPlayer(uuid1).getName()).collect(Collectors.toList()).toString();
             String enemyPlayers = enemyPlayersRaw.substring(1, enemyPlayersRaw.length() - 1);
 
 
-            this.party.getMembers().forEach(uuid1 -> {
+            this.defendingParty.getMembers().forEach(uuid1 -> {
                 Player player = Bukkit.getPlayer(uuid1);
                 if (player == null) return;
                 MsgUtil.msg(player, PatchTestPlugin.getPlugin().msg().getStringList("versusSessionOverLost"),
@@ -229,7 +228,7 @@ public class Session {
                         new Pair<>("{time}", time));
             });
 
-            this.versusParty.getMembers().forEach(uuid1 -> {
+            this.attackingParty.getMembers().forEach(uuid1 -> {
                 Player player = Bukkit.getPlayer(uuid1);
                 if (player == null) return;
                 MsgUtil.msg(player, PatchTestPlugin.getPlugin().msg().getStringList("versusSessionOverWon"),

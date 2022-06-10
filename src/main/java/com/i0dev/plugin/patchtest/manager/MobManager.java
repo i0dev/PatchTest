@@ -26,6 +26,11 @@ import org.bukkit.scheduler.BukkitTask;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Acts as a monster entity manager for the guardians that get spawned in during ranked sessions.
+ *
+ * @author Andrew Magnuson
+ */
 public class MobManager extends AbstractManager {
 
     @Getter
@@ -126,6 +131,10 @@ public class MobManager extends AbstractManager {
     };
 
 
+    /**
+     * This method will prevent entities from taking damage from exploding blocks. Helpful for having them not die whenever the cannon shoots lol.
+     * @param e The event
+     */
     @EventHandler
     public void onDamage(EntityDamageEvent e) {
         if (e.getCause().equals(EntityDamageEvent.DamageCause.ENTITY_EXPLOSION) || e.getCause().equals(EntityDamageEvent.DamageCause.BLOCK_EXPLOSION))

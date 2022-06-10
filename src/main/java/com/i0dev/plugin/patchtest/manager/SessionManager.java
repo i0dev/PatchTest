@@ -94,17 +94,17 @@ public class SessionManager extends AbstractManager {
      */
     public Session getSession(Party party) {
         return sessions.stream()
-                .filter(session -> session.getParty().getUuid().equals(party.getUuid()))
+                .filter(session -> session.getDefendingParty().getUuid().equals(party.getUuid()))
                 .findFirst().orElse(null);
     }
 
     public Session getSession(Player player) {
         return sessions.stream()
                 .filter(session -> {
-                    if (session.getParty().getMembers().stream().anyMatch(uuid -> uuid.equals(player.getUniqueId())))
+                    if (session.getDefendingParty().getMembers().stream().anyMatch(uuid -> uuid.equals(player.getUniqueId())))
                         return true;
-                    if (session.getVersusParty() != null) {
-                        return session.getVersusParty().getMembers().stream().anyMatch(uuid -> uuid.equals(player.getUniqueId()));
+                    if (session.getAttackingParty() != null) {
+                        return session.getAttackingParty().getMembers().stream().anyMatch(uuid -> uuid.equals(player.getUniqueId()));
                     }
                     return false;
                 })
@@ -145,11 +145,11 @@ public class SessionManager extends AbstractManager {
         if (session == null) return;
         if (session.getType() == SessionType.VERSUS) {
             Session ses = SessionManager.getInstance().getSession(((Player) e.getEntity()));
-            if (ses.getParty().getMembers().contains(e.getEntity().getUniqueId()) && ses.getParty().getMembers().contains(e.getDamager().getUniqueId())) {
+            if (ses.getDefendingParty().getMembers().contains(e.getEntity().getUniqueId()) && ses.getDefendingParty().getMembers().contains(e.getDamager().getUniqueId())) {
                 MsgUtil.msg(e.getDamager(), PatchTestPlugin.getMsg("session.cantFightTeammates"));
                 e.setCancelled(true);
             }
-            if (ses.getVersusParty().getMembers().contains(e.getEntity().getUniqueId()) && ses.getVersusParty().getMembers().contains(e.getDamager().getUniqueId())) {
+            if (ses.getAttackingParty().getMembers().contains(e.getEntity().getUniqueId()) && ses.getAttackingParty().getMembers().contains(e.getDamager().getUniqueId())) {
                 MsgUtil.msg(e.getDamager(), PatchTestPlugin.getMsg("session.cantFightTeammates"));
                 e.setCancelled(true);
             }

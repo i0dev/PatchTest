@@ -30,6 +30,11 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * An inventory manager for the GUI's that appear throughout this plugin.
+ *
+ * @author Andrew Magnuson
+ */
 public class InventoryManager extends AbstractManager {
 
     @Getter

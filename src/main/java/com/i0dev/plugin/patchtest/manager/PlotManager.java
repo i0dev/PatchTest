@@ -76,7 +76,7 @@ public class PlotManager extends AbstractManager {
     public void onBlockPlace(BlockPlaceEvent e) {
         Session session = SessionManager.getInstance().getSession(e.getPlayer());
         if (session == null) return;
-        if (session.getType() == SessionType.VERSUS && session.getVersusParty().getMembers().contains(e.getPlayer().getUniqueId())) {
+        if (session.getType() == SessionType.VERSUS && session.getAttackingParty().getMembers().contains(e.getPlayer().getUniqueId())) {
             MsgUtil.msg(e.getPlayer(), PatchTestPlugin.getMsg("session.cantDoThatWhileRaiding"));
             e.setCancelled(true);
         }
@@ -107,7 +107,7 @@ public class PlotManager extends AbstractManager {
         Session session = SessionManager.getInstance().getSession(e.getPlayer());
         if (session == null) return;
 
-        if (session.getType() == SessionType.VERSUS && session.getVersusParty().getMembers().contains(e.getPlayer().getUniqueId())) {
+        if (session.getType() == SessionType.VERSUS && session.getAttackingParty().getMembers().contains(e.getPlayer().getUniqueId())) {
             MsgUtil.msg(e.getPlayer(), PatchTestPlugin.getMsg("session.cantDoThatWhileRaiding"));
             e.setCancelled(true);
         }

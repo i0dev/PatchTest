@@ -16,7 +16,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import javax.crypto.BadPaddingException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -114,7 +113,7 @@ public class CmdSession extends AbstractCommand {
             return;
         }
 
-        if (session.getVersusParty() != null) {
+        if (session.getAttackingParty() != null) {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("session.alreadyChallengingParty"));
             return;
         }
@@ -206,7 +205,7 @@ public class CmdSession extends AbstractCommand {
         }
 
         versusSession.getPendingChallenges().remove(party.getUuid());
-        versusSession.setVersusParty(party);
+        versusSession.setAttackingParty(party);
 
         MsgUtil.msg(sender, PatchTestPlugin.getMsg("session.acceptedChallenge"),
                 new Pair<>("{player}", challenger.getName())
@@ -254,12 +253,12 @@ public class CmdSession extends AbstractCommand {
             return;
         }
 
-        if (!session.getParty().getLeader().equals(uuid)) {
+        if (!session.getDefendingParty().getLeader().equals(uuid)) {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("session.onlySessionHostCanStart"));
             return;
         }
 
-        if (session.getType() == SessionType.VERSUS && session.getVersusParty() == null) {
+        if (session.getType() == SessionType.VERSUS && session.getAttackingParty() == null) {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("session.noOpponent"));
             return;
         }
