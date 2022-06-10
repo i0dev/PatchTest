@@ -15,6 +15,10 @@ commands:
       - pt
     description: The main patchtest command
     usage: /patch [create/start/invite/join/help/reload/version]
+  party:
+    aliases:
+      - p
+    description: The main party command
   obby:
     aliases:
       - freeObsidian
@@ -29,36 +33,9 @@ commands:
       - stats
     description: Opens an leaderboard GUI
     usage: /leaderboard
-
-
-permissions:
-  patchtest.create:
-    description: Use the /patch create command
-    default: not op
-  patchtest.start:
-    description: Use the /patch start command
-    default: not op
-  patchtest.invite:
-    description: Use the /patch invite command
-    default: not op
-  patchtest.remove:
-    description: Use the /patch remove command
-    default: not op
-  patchtest.join:
-    description: Use the /patch join command
-    default: not op
-  patchtest.leave:
-    description: Use the /patch leave command
-    default: not op
-  patchtest.admin:
-    description: Bypasses many restrictions
-    default: op
-  patchtest.reload:
-    description: Use the /patch reload command
-    default: op
-  patchtest.obby:
-    description: Use the /obby command
-    default: not op
-  patchtest.leaderboard:
-    description: Use the /leaderboard
-    default: not op
+  session:
+    aliases:
+      - ses
+      - sesh
+      - patchsession
+    description: session commands
