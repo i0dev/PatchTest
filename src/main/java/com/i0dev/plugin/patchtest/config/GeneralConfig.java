@@ -28,12 +28,13 @@ public class GeneralConfig extends AbstractConfiguration {
         config.set("patchKitName", "patch");
         config.set("adjustTimeRandomHigherBound", 20);
         config.set("adjustTimeRandomLowerBound", 10);
-        config.set("cannonSpeed", 3);
+        config.set("defaultCannonSpeed", 3);
 
-        config.set("countdownSubtitle", "&7seconds remaining...");
-        config.set("countdownTitle", "&a&l{sec}");
+        config.set("countdownTitle", "&7Starting in &a&l{sec} seconds");
+        config.set("countdownSubtitleDefend", "&7You are &9&lDEFENDING");
+        config.set("countdownSubtitleAttack", "&7You are &4&lATTACKING");
         config.set("countdownGoTitle", "&a&lGO!!!");
-        config.set("countdownGoSubtitle", "&7Patch your walls to defend your base!");
+        config.set("countdownGoSubTitle", "&7Good Luck");
 
         config.set("cmdObbyInventoryTitle", "&cFree Obsidian");
 
@@ -91,13 +92,31 @@ public class GeneralConfig extends AbstractConfiguration {
                         "",
                         "&7This is the sandbox mode of patch testing",
                         "&7Stats will not be recorded. You can change",
-                        "&7the settings of the plot anytime with &c/plot settings",
+                        "&7the settings of the plot anytime with &c/session settings",
                         "",
                         "&7You can invite as many players to your patch session as you wish"
                 ),
                 0,
                 true,
                 15
+
+        ).serialize());
+
+        config.set("createGUI.versusItem", new ConfigIndexItemStack(
+                Material.DIAMOND_SWORD,
+                "&c&lVersus",
+                Arrays.asList(
+                        "",
+                        "&7This is a team v team mode in patch testing",
+                        "&7Stats will not be recorded. You can change",
+                        "&7the settings of the plot before you start it with &c/plot settings",
+                        "",
+                        "&7You can challenge another team with &c/session challenge <player>",
+                        "&7it will find their party and send an invite"
+                ),
+                0,
+                true,
+                13
 
         ).serialize());
 

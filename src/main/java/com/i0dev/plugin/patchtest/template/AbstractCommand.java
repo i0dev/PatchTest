@@ -5,15 +5,15 @@ import com.i0dev.plugin.patchtest.object.SimpleConfig;
 import com.i0dev.plugin.patchtest.utility.MsgUtil;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.plugin.PluginDescriptionFile;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -95,7 +95,7 @@ public abstract class AbstractCommand implements CommandExecutor, TabExecutor {
     //         Tab Complete Section
     //
     protected List<String> blank = new ArrayList<>();
-    protected List<String> players = null;
+    protected List<String> players = Bukkit.getOnlinePlayers().stream().map(HumanEntity::getName).collect(Collectors.toList());
 
     /**
      * This is the listener for when a {@link CommandSender} tab completes, implemented from bukkit.

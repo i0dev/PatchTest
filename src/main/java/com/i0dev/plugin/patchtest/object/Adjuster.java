@@ -1,7 +1,6 @@
 package com.i0dev.plugin.patchtest.object;
 
 import com.i0dev.plugin.patchtest.PatchTestPlugin;
-import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -14,7 +13,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Adjuster {
 
     private PatchPlot plot;
-    private PatchSession session;
+    private Session session;
     private List<Location> previousLocations;
     private Location activeLocation;
     private int adjustHowOften;
@@ -23,8 +22,8 @@ public class Adjuster {
     private long lastAdjustTime;
 
 
-    public Adjuster(PatchPlot plot, PatchSession session) {
-        this.plot = plot;
+    public Adjuster(Session session) {
+        this.plot = session.getPlot();
         this.session = session;
         firstShot = true;
         activeLocation = plot.getDefaultShootLocation();
@@ -70,7 +69,7 @@ public class Adjuster {
 
     public Location getMostEfficientLocation() {
         if (firstShot) return plot.getDefaultShootLocation();
-        if (session.getSettings().getCannonType().equals(CannonType.OS_AP_NUKE))
+        if (session.getCannonType().equals(CannonType.OS_AP_NUKE))
             top = top >= 250 ? top - os_offset : top;
 
         if (counter_top >= 6) {
