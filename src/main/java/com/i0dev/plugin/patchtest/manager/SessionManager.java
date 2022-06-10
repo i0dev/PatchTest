@@ -1,19 +1,21 @@
 package com.i0dev.plugin.patchtest.manager;
 
 import com.i0dev.plugin.patchtest.PatchTestPlugin;
-import com.i0dev.plugin.patchtest.object.Pair;
-import com.i0dev.plugin.patchtest.object.PatchSession;
+import com.i0dev.plugin.patchtest.object.Party;
+import com.i0dev.plugin.patchtest.object.Session;
+import com.i0dev.plugin.patchtest.object.SessionType;
+import com.i0dev.plugin.patchtest.object.TeamSize;
 import com.i0dev.plugin.patchtest.template.AbstractManager;
 import com.i0dev.plugin.patchtest.utility.MsgUtil;
 import lombok.Getter;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerKickEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Patch Session Manager
@@ -25,12 +27,34 @@ public class SessionManager extends AbstractManager {
     @Getter
     private static final SessionManager instance = new SessionManager();
     @Getter
-    private final Set<PatchSession> sessions = new HashSet<>();
+    private final Set<Session> sessions = new HashSet<>();
 
     @Override
     public void initialize() {
         setListener(true);
     }
+
+    public Session createSession(Party party, SessionType sessionType) {
+        Session session = new Session(party, sessionType);
+        sessions.add(session);
+        return session;
+    }
+
+    public TeamSize getTeamSize(Party party) {
+        TeamSize size;
+        if (party.getMembers().size() == 1) {
+            size = TeamSize.SOLO;
+        } else if (party.getMembers().size() == 2) {
+            size = TeamSize.DUO;
+        } else if (party.getMembers().size() > 2 && party.getMembers().size() <= TeamSize.SQUAD.getSize()) {
+            size = TeamSize.SQUAD;
+        } else if (party.getMembers().size() > 5 && party.getMembers().size() <= TeamSize.TEAM.getSize()) {
+            size = TeamSize.TEAM;
+        } else size = TeamSize.UNLIMITED;
+
+        return size;
+    }
+
 
     /**
      * @param index The index of the plot to check for.
@@ -47,7 +71,7 @@ public class SessionManager extends AbstractManager {
      * @return true if this set contained the specified element, false if the session did not exist
      */
     public boolean remove(UUID uuid) {
-        PatchSession session = getSession(uuid);
+        Session session = getSession(uuid);
         if (session == null) return false;
         return sessions.remove(session);
     }
@@ -55,24 +79,35 @@ public class SessionManager extends AbstractManager {
     /**
      * Add a patch session to the list.
      *
-     * @param session the {@link PatchSession} to add
+     * @param session the {@link Session} to add
      * @return true if this set did not already contain the specified element
      */
-    public boolean add(PatchSession session) {
+    public boolean add(Session session) {
         return sessions.add(session);
     }
 
     /**
      * Will retrieve the PatchSession that player is in.
      *
-     * @param player The player to check sessions for membership.
-     * @return The {@link PatchSession} that that player is a member in, null if they are not in any.
+     * @param party The party to check uuids for.
+     * @return The {@link Session} that that player is a member in, null if they are not in any.
      */
-    public PatchSession getSession(Player player) {
+    public Session getSession(Party party) {
         return sessions.stream()
-                .filter(session -> session.getPlayers().stream()
-                        .filter(p -> p.getUniqueId().equals(player.getUniqueId()))
-                        .findFirst().orElse(null) != null)
+                .filter(session -> session.getParty().getUuid().equals(party.getUuid()))
+                .findFirst().orElse(null);
+    }
+
+    public Session getSession(Player player) {
+        return sessions.stream()
+                .filter(session -> {
+                    if (session.getParty().getMembers().stream().anyMatch(uuid -> uuid.equals(player.getUniqueId())))
+                        return true;
+                    if (session.getVersusParty() != null) {
+                        return session.getVersusParty().getMembers().stream().anyMatch(uuid -> uuid.equals(player.getUniqueId()));
+                    }
+                    return false;
+                })
                 .findFirst().orElse(null);
     }
 
@@ -82,71 +117,10 @@ public class SessionManager extends AbstractManager {
      * @param uuid the {@link UUID} of the session.
      * @return The session representing the specified uuid, otherwise null if it didn't exist
      */
-    public PatchSession getSession(UUID uuid) {
+    public Session getSession(UUID uuid) {
         return sessions.stream().filter(s -> s.getUuid().equals(uuid)).findFirst().orElse(null);
     }
 
-    //
-    //          Invite Section
-    //
-
-    /**
-     * The {@link UUID} in this map is the inviter, while the {@link List}<{@link UUID}> is the list of users the inviter has invited.
-     */
-    private final Map<UUID, List<UUID>> inviteMap = new HashMap<>();
-
-    /**
-     * Get the list of users the inviter has invited.
-     *
-     * @param inviter The inviter to get invitees
-     * @return the list of players that the specified inviter has invited, otherwise null if there are none.
-     */
-    public List<UUID> getInvitees(Player inviter) {
-        return inviteMap.getOrDefault(inviter.getUniqueId(), null);
-    }
-
-    /**
-     * Check if a player has invited another player.
-     *
-     * @param inviter The inviter to check
-     * @param invited The invitee to check
-     * @return true if the inviter has invited that player to their session, false if they have not
-     */
-    public boolean isInvited(Player inviter, Player invited) {
-        List<UUID> invitees = getInvitees(inviter);
-        if (invitees == null) return false;
-        return invitees.contains(invited.getUniqueId());
-    }
-
-    /**
-     * Create a new invite and add it to the invite map.
-     *
-     * @param inviter The inviter
-     * @param invited The invitee
-     */
-    public void newInvite(Player inviter, Player invited) {
-        List<UUID> invitees = getInvitees(inviter);
-        if (invitees == null) {
-            invitees = new ArrayList<>();
-            invitees.add(invited.getUniqueId());
-            inviteMap.put(inviter.getUniqueId(), invitees);
-        } else {
-            invitees.add(invited.getUniqueId());
-        }
-    }
-
-    /**
-     * Remove an invitation from the invite map
-     *
-     * @param inviter The inviter
-     * @param invited The invitee
-     */
-    public void removeInvite(Player inviter, Player invited) {
-        List<UUID> invitees = getInvitees(inviter);
-        if (invitees == null) return;
-        invitees.remove(invited.getUniqueId());
-        if (invitees.isEmpty()) inviteMap.remove(inviter.getUniqueId());
-    }
 
     //
     //     Event Handling
@@ -158,49 +132,30 @@ public class SessionManager extends AbstractManager {
      */
     @EventHandler
     public void onExplode(EntityExplodeEvent e) {
-        PatchSession session = sessions.stream().filter(s -> s.getPlot().getBaseCuboid().contains(e.getLocation())).findFirst().orElse(null);
+        Session session = sessions.stream().filter(s -> s.getPlot().getBaseCuboid().contains(e.getLocation())).findFirst().orElse(null);
         if (session == null) return;
-        session.end();
+        session.stop();
     }
 
     @EventHandler
-    public void onKick(PlayerKickEvent e) {
-        onLeaveExecute(e.getPlayer());
-    }
-
-    @EventHandler
-    public void onLeave(PlayerQuitEvent e) {
-        onLeaveExecute(e.getPlayer());
-    }
-
-    public void onLeaveExecute(Player leftPlayer) {
-        PatchSession session = getInstance().getSession(leftPlayer);
+    public void onFight(EntityDamageByEntityEvent e) {
+        if (!(e.getDamager() instanceof Player)) return;
+        if (!(e.getEntity() instanceof Player)) return;
+        Session session = sessions.stream().filter(s -> s.getPlot().getAllowedMoveCuboid().contains(e.getDamager().getLocation())).findFirst().orElse(null);
         if (session == null) return;
-        if (!session.isCreator(leftPlayer)) {
-            if (session.getPlayers().size() > 1) {
-                Player newCreator = session.getPlayers().get(1);
-                session.setCreator(newCreator);
-                session.getPlayers().remove(leftPlayer);
-                session.getPlayers().forEach(player1 -> MsgUtil.msg(player1, PatchTestPlugin.getMsg("playerLoggedOfflineTransferLeader"),
-                        new Pair<>("{newPlayer}", newCreator.getName()),
-                        new Pair<>("{player}", leftPlayer.getName())));
-                MsgUtil.msg(newCreator, PatchTestPlugin.getMsg("youAreNewLeader"), new Pair<>("{player}", leftPlayer.getName()));
-            } else {
-                session.stop();
+        if (session.getType() == SessionType.VERSUS) {
+            Session ses = SessionManager.getInstance().getSession(((Player) e.getEntity()));
+            if (ses.getParty().getMembers().contains(e.getEntity().getUniqueId()) && ses.getParty().getMembers().contains(e.getDamager().getUniqueId())) {
+                MsgUtil.msg(e.getDamager(), PatchTestPlugin.getMsg("session.cantFightTeammates"));
+                e.setCancelled(true);
             }
-        } else {
-            session.getPlayers().remove(leftPlayer);
+            if (ses.getVersusParty().getMembers().contains(e.getEntity().getUniqueId()) && ses.getVersusParty().getMembers().contains(e.getDamager().getUniqueId())) {
+                MsgUtil.msg(e.getDamager(), PatchTestPlugin.getMsg("session.cantFightTeammates"));
+                e.setCancelled(true);
+            }
+            return;
         }
-        session.getRejoinList().add(leftPlayer.getUniqueId());
-        leftPlayer.setHealth(0);
-        session.getPlayers().forEach(player -> MsgUtil.msg(player, PatchTestPlugin.getMsg("playerLoggedOffline"), new Pair<>("{player}", leftPlayer.getName())));
-    }
-
-    @EventHandler
-    public void onJoin(PlayerJoinEvent e) {
-        PatchSession session = sessions.stream().filter(s -> s.getRejoinList().contains(e.getPlayer().getUniqueId())).findFirst().orElse(null);
-        if (session == null) return;
-        MsgUtil.msg(e.getPlayer(), PatchTestPlugin.getMsg("rejoinLogin"));
+        e.setCancelled(true);
     }
 
 
