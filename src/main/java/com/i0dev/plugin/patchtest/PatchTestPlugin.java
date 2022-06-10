@@ -1,16 +1,19 @@
 package com.i0dev.plugin.patchtest;
 
-import com.i0dev.plugin.patchtest.command.CmdLeaderboard;
-import com.i0dev.plugin.patchtest.command.CmdObby;
+import com.i0dev.plugin.patchtest.command.*;
 import com.i0dev.plugin.patchtest.config.GeneralConfig;
 import com.i0dev.plugin.patchtest.config.MessageConfig;
-import com.i0dev.plugin.patchtest.command.CmdPatch;
 import com.i0dev.plugin.patchtest.config.MonsterConfig;
 import com.i0dev.plugin.patchtest.hook.PlaceholderAPIHook;
 import com.i0dev.plugin.patchtest.manager.*;
 import com.i0dev.plugin.patchtest.object.CorePlugin;
 import lombok.Getter;
 import lombok.SneakyThrows;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+
+import java.util.UUID;
 
 @Getter
 public class PatchTestPlugin extends CorePlugin {
@@ -42,23 +45,29 @@ public class PatchTestPlugin extends CorePlugin {
 
         // Commands
         registerCommand(CmdPatch.getInstance(), "patch");
+        registerCommand(CmdParty.getInstance(), "party");
+        registerCommand(CmdSession.getInstance(), "session");
         registerCommand(CmdObby.getInstance(), "obby");
         registerCommand(CmdLeaderboard.getInstance(), "leaderboard");
 
         setCommandsForHelp(
                 "patch help",
-                "patch tp",
-                "patch create",
-                "patch leave",
-                "patch start",
-                "patch rejoin",
-                "patch invite <player>",
-                "patch join <player>",
-                "patch remove <player>",
-                "patch reload",
                 "patch version",
+                "patch reload",
+                "session help",
+                "party help",
+                "leaderboard",
                 "obby"
         );
+    }
+
+    public static void spawnPlayer(UUID uuid) {
+        Player player = Bukkit.getPlayer(uuid);
+        if (player == null) return;
+        player.getInventory().clear();
+        player.getInventory().setArmorContents(new ItemStack[4]);
+
+        getPlugin().getServer().dispatchCommand(Bukkit.getConsoleSender(), "spawn " + player.getName());
     }
 
     /**
