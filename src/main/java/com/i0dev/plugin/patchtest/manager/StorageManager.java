@@ -46,7 +46,6 @@ public class StorageManager extends AbstractManager {
                 "CREATE TABLE IF NOT EXISTS `ranked_scores` (" +
                 "`id`          INTEGER PRIMARY KEY ASC AUTOINCREMENT NOT NULL, " +
                 "`sessionUUID` VARCHAR(36)                           NOT NULL, " +
-                "`creatorUUID` VARCHAR(36)                           NOT NULL, " +
                 "`teamSize`    VARCHAR(36)                           NOT NULL, " +
                 "`lengthHeld`  BIGINT                                NOT NULL, " +
                 "`timeEnded`   BIGINT                                NOT NULL" +
@@ -72,9 +71,8 @@ public class StorageManager extends AbstractManager {
     @SneakyThrows
     public void addEntry(ScoreEntry entry) {
         connection.prepareStatement(String.format(
-                "INSERT INTO ranked_scores (creatorUUID, sessionUUID, teamSize, lengthHeld, timeEnded)" +
-                        "VALUES ('%s', '%s', '%s', %s, %s);",
-                entry.getCreator().toString(),
+                "INSERT INTO ranked_scores (sessionUUID, teamSize, lengthHeld, timeEnded)" +
+                        "VALUES ('%s', '%s', %s, %s);",
                 entry.getSessionUUID().toString(),
                 entry.getTeamSize().name(),
                 entry.getLengthHeld(),
@@ -82,7 +80,7 @@ public class StorageManager extends AbstractManager {
         )).execute();
 
 
-        entry.getPlayers().stream().filter(uuid -> !uuid.equals(entry.getCreator())).forEach(uuid -> {
+        entry.getPlayers().forEach(uuid -> {
             try {
                 connection.prepareStatement(String.format("" +
                                 "INSERT INTO ranked_scores_sub_users(sessionUUID, playerUUID)" +
