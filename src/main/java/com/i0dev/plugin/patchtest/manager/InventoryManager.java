@@ -54,6 +54,9 @@ public class InventoryManager extends AbstractManager {
         ConfigIndexItemStack sandbox = new ConfigIndexItemStack(cnf.getConfigurationSection("createGUI.sandboxItem").getValues(true));
         inventory.setItem(sandbox.getIndex(), applyNBT(sandbox, "createSandboxSession"));
 
+        ConfigIndexItemStack versus = new ConfigIndexItemStack(cnf.getConfigurationSection("createGUI.versusItem").getValues(true));
+        inventory.setItem(versus.getIndex(), applyNBT(versus, "createVersusSession"));
+
         return inventory;
     }
 
@@ -151,7 +154,10 @@ public class InventoryManager extends AbstractManager {
             e.getWhoClicked().closeInventory();
         } else if (nbtItem.hasKey("createSandboxSession")) {
             //  createSandboxSession((Player) e.getWhoClicked());
-            e.getWhoClicked().sendMessage(MsgUtil.color("&cSandbox is disabled for beta, please only use ranked mode!"));
+            e.getWhoClicked().sendMessage(MsgUtil.color("&cSandbox is disabled for beta, please only use ranked or versus mode!"));
+            e.getWhoClicked().closeInventory();
+        } else if (nbtItem.hasKey("createVersusSession")) {
+            createVersusSession((Player) e.getWhoClicked());
             e.getWhoClicked().closeInventory();
         } else if (nbtItem.hasKey("leaderboard_solo")) {
             e.getWhoClicked().openInventory(getSpecificLeaderboardInventory(TeamSize.SOLO));
@@ -162,16 +168,20 @@ public class InventoryManager extends AbstractManager {
         } else if (nbtItem.hasKey("leaderboard_team")) {
             e.getWhoClicked().openInventory(getSpecificLeaderboardInventory(TeamSize.TEAM));
         }
-
     }
 
     private void createRankedSession(Player creator) {
-        SessionManager.getInstance().add(new PatchSession(creator, new SessionSettings(true, PatchTestPlugin.getPlugin().cnf().getInt("rankedSettings.cannonSpeed"), CannonType.valueOf(PatchTestPlugin.getPlugin().cnf().getString("rankedSettings.cannonType")), TeamSize.SOLO)));
+        SessionManager.getInstance().createSession(PartyManager.getInstance().getParty(creator.getUniqueId()), SessionType.RANKED);
         MsgUtil.msg(creator, PatchTestPlugin.getPlugin().msg().getStringList("newPatchSession"));
     }
 
     private void createSandboxSession(Player creator) {
-        SessionManager.getInstance().add(new PatchSession(creator, new SessionSettings(false, 3, CannonType.NUKE, TeamSize.UNLIMITED)));
+        SessionManager.getInstance().createSession(PartyManager.getInstance().getParty(creator.getUniqueId()), SessionType.SANDBOX);
+        MsgUtil.msg(creator, PatchTestPlugin.getPlugin().msg().getStringList("newPatchSession"));
+    }
+
+    private void createVersusSession(Player creator) {
+        SessionManager.getInstance().createSession(PartyManager.getInstance().getParty(creator.getUniqueId()), SessionType.VERSUS);
         MsgUtil.msg(creator, PatchTestPlugin.getPlugin().msg().getStringList("newPatchSession"));
     }
 

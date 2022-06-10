@@ -21,7 +21,7 @@ public class MessageConfig extends AbstractConfiguration {
         config.set("invalidNumber", "&cThe number &f{num} &cis invalid! Try again.");
         config.set("cantRunAsConsole", "&cYou cannot run this command from console.");
 
-        config.set("helpPageTitle", "&8_______&r&8[&r &c&lPotFill &8]_______");
+        config.set("helpPageTitle", "&8_______&r&8[&r &c&lPatch Help &8]_______");
         config.set("helpPageFormat", " &c* &7/{cmd}");
 
         config.set("notInSession", "&cYou are not in an active patch session!");
@@ -57,7 +57,7 @@ public class MessageConfig extends AbstractConfiguration {
                 "&7Use &c/potfill &7to fill your inventory with potions",
                 "",
                 "&7When you are ready to start your session,",
-                "&7use the command &a/patch start&7"
+                "&7use the command &a/session start&7"
         ));
 
         config.set("noInvite", "&7You do not have any pending invites from &c{player}&7.");
@@ -98,6 +98,7 @@ public class MessageConfig extends AbstractConfiguration {
                 ""
         ));
 
+
         config.set("playerLoggedOffline", "&c{player}&7 has logged offline, they were removed from the session but can rejoin at any time.");
         config.set("playerLoggedOfflineTransferLeader", "&c{player}&7 has logged offline. Leader has been transferred to &c{newPlayer}&7.");
         config.set("yourNewLeaderOldLogOff", "&7You have been transferred leadership of this session because &c{player}&7 has logged offline.");
@@ -106,6 +107,88 @@ public class MessageConfig extends AbstractConfiguration {
 
         config.set("teamFull", "&7That team is currently at its maximum members.");
         config.set("teamFullCantInvite", "&7Your team is at the maximum amount of members.");
+
+        //party
+        config.set("party.helpPageTitle", "&8_____&r&8[&r &c&lParty Help &8]_____");
+        config.set("party.alreadyInParty", "&cYou are already in a party!");
+        config.set("party.createdParty", "&aYou have created a new party!");
+        config.set("party.notInParty", "&cYou are not in a party!");
+        config.set("party.alreadyInvited", "&cYou have already invited that player to your party!");
+        config.set("party.beenInvited", "&7You have been invited to join &c{player}'s&7 party");
+        config.set("party.youInvited", "&7You have invited &c{player}&7 to your party.");
+        config.set("party.playerNotInParty", "&7That player is not in your party.");
+        config.set("party.removedPlayerFromParty", "&7You have removed &c{player}&7 from your party.");
+        config.set("party.removedFromParty", "&7You have been removed from &c{player}'s &7party.");
+        config.set("party.playerNotInvited", "&7That player has not been invited to your party.");
+        config.set("party.playerRevokedInvite", "&7You have revoked &c{player}'s&7 invite to your party");
+        config.set("party.inviteRevoked", "&7Your invite to &c{player}'s&7 party has been revoked.");
+        config.set("party.notInvited", "&7You have not been invited to join that party.");
+        config.set("party.youJoined", "&7You have joined &c{player}'s &7party.");
+        config.set("party.playerJoinedParty", "&c{player} &7has joined your party.");
+        config.set("party.playerLeftParty", "&c{player} &7has left the party.");
+        config.set("party.youLeftParty", "&7You have left the current party.");
+        config.set("party.leaderCantLeave", "&7You are the leader of the party, therefore you cannot leave. You can disband with /party disband.");
+        config.set("party.onlyLeaderCanDisband", "&7Only the party leader can disband.");
+        config.set("party.partyDisbanded", "&7Your party has been disbanded.");
+        config.set("party.playerNotInAnyParty", "&7That player is not in a party.");
+        config.set("party.playerAlreadyInParty", "&7That player is already in your party.");
+        config.set("party.onlyLeaderCanRemove", "&7Only the party leader can remove players.");
+
+        // session
+        config.set("session.helpPageTitle", "&8_____&r&8[&r &c&lSession Help &8]_____");
+        config.set("session.notInSession", "&7You are not in a session.");
+        config.set("session.notInVersusSession", "&7You are not in a versus session.");
+        config.set("session.alreadyChallenged", "&7You have already challenged that party.");
+        config.set("session.alreadyInSession", "&7You are already in a session.");
+        config.set("session.sentChallengeRequest", "&7You have sent a challenge invite to &c{player}");
+        config.set("session.beenChallenged", "&c{player} &7has challenged you to a versus battle. accept with &c/session accept {player}");
+        config.set("session.alreadyInSession", "&7You are already in a session, leave it first.");
+        config.set("session.onlyPartyLeaderCanAcceptChallenge", "&7Only the party leader can accept challenges.");
+        config.set("session.notBeenChallenged", "&7Your team has not been challenged by that party.");
+        config.set("session.acceptedChallenge", "&7You have accepted the challenge invite from {player}.");
+        config.set("session.nowInChallenge", "&7You are now challenging with {player}'s party.");
+        config.set("session.onlySessionHostCanStart", "&7Only the session host can start.");
+        config.set("session.noOpponent", "&7You have not challenged anyone!");
+        config.set("session.alreadyChallengingParty", "&7You are already challenging a party!");
+        config.set("session.versusSessionStarting", "&7Versus session starting now. Countdown initiating!");
+        config.set("session.rankedSessionStarting", "&7Ranked session starting now. Countdown initiating!");
+        config.set("session.sandboxSessionStarting", "&7Sandbox session starting now. Countdown initiating!");
+        config.set("session.cantFightTeammates", "&7That player is on your team. You cannot fight them!");
+        config.set("session.cantFightTeammates", "&7That player is on your team. You cannot fight them!");
+        config.set("session.waitForSessionToStart", "&7Please wait for the session to start to do that!");
+        config.set("session.cantDoThatWhileRaiding", "&7You cannot do that while raiding!");
+        config.set("session.tpBackOnDeath", "&7You have died! Use &c/session tp&7 to get back.");
+
+        config.set("rankedSessionOver", Arrays.asList(
+                "",
+                "&c&lYour base got breached by the guardians!",
+                "",
+                "&7You lasted: &c&l{time}",
+                "&7Session Size: &c{size}",
+                "&7Players: &c{players}",
+                ""
+        ));
+
+        config.set("versusSessionOverLost", Arrays.asList(
+                "",
+                "&c&lYour base got breached by the the opposite team!",
+                "",
+                "&7You held for: &c&l{time}",
+                "&7Your Team: &c{yourPlayers}",
+                "&7Enemy Team: &c{enemyPlayers}",
+                ""
+        ));
+
+
+        config.set("versusSessionOverWon", Arrays.asList(
+                "",
+                "&c&lYour raided the other players base!",
+                "",
+                "&7You raided for: &c&l{time}",
+                "&7Your Team: &c{yourPlayers}",
+                "&7Enemy Team: &c{enemyPlayers}",
+                ""
+        ));
 
 
     }

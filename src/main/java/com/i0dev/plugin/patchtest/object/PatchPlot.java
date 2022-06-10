@@ -58,8 +58,7 @@ public class PatchPlot {
 
         this.wallsCuboid = new Cuboid(xMin, 0, zMin, xMax, 254, zMax, world.getName());
 
-        this.tpLocation = wallsCuboid.getCenter();
-        tpLocation.setY(wallsCuboid.getYMax() + 20);
+        this.tpLocation = new Location(getWorld(), wallsCuboid.getXCenter(), 260, wallsCuboid.getZMax() - 5);
 
         this.defaultShootLocation = new Location(
                 Bukkit.getWorld(PatchTestPlugin.getPlugin().cnf().getString("patchWorldName")),

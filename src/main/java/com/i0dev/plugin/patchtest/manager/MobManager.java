@@ -1,7 +1,8 @@
 package com.i0dev.plugin.patchtest.manager;
 
 import com.i0dev.plugin.patchtest.PatchTestPlugin;
-import com.i0dev.plugin.patchtest.object.PatchSession;
+import com.i0dev.plugin.patchtest.object.Session;
+import com.i0dev.plugin.patchtest.object.SessionType;
 import com.i0dev.plugin.patchtest.object.config.MonsterSpawnTime;
 import com.i0dev.plugin.patchtest.template.AbstractManager;
 import com.i0dev.plugin.patchtest.utility.MsgUtil;
@@ -62,8 +63,9 @@ public class MobManager extends AbstractManager {
     };
 
     private final Runnable taskSpawnMobs = () -> {
-        for (PatchSession session : SessionManager.getInstance().getSessions()) {
-            long timeStarted = session.getStartTime();
+        for (Session session : SessionManager.getInstance().getSessions()) {
+            if (session.getType() == SessionType.VERSUS) return;
+            long timeStarted = session.getStartTimeMillis();
             for (Object obj : PatchTestPlugin.getPlugin().monster().getList("monsters")) {
                 MonsterSpawnTime mst = new MonsterSpawnTime((Map<String, Object>) obj);
                 Map<Integer, Integer> times = mst.getTimes();
@@ -75,7 +77,7 @@ public class MobManager extends AbstractManager {
                             && System.currentTimeMillis() - lastSpawnTime > 3000) {
                         Bukkit.getScheduler().runTask(PatchTestPlugin.getPlugin(), () -> {
                             lastSpawnTime = System.currentTimeMillis();
-                            for (Player player : session.getPlayers()) {
+                            for (Player player : session.getSessionPlayers()) {
                                 Location spawnLoc = player.getLocation();
                                 spawnLoc.add(0, 1, 0);
                                 for (int i = 0; i < amountPerPlayer; i++) {
