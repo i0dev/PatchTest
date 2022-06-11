@@ -77,7 +77,7 @@ public class PlaceholderAPIHook extends AbstractHook {
                 Session session = SessionManager.getInstance().getSession(one);
                 Session session2 = SessionManager.getInstance().getSession(two);
 
-                if (session == null || session2 == null) return "&f";
+                if (session == null || session2 == null) return "";
 
                 Set<UUID> defendingMembers = session.getDefendingParty().getMembers();
                 Set<UUID> attackingMembers = session.getAttackingParty().getMembers();
@@ -92,7 +92,7 @@ public class PlaceholderAPIHook extends AbstractHook {
                 if (defendingMembers.contains(one.getUniqueId()) && attackingMembers.contains(two.getUniqueId()))
                     return "&c";
 
-                return "&f";
+                return "";
             }
             return null;
         }
