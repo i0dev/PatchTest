@@ -154,9 +154,6 @@ public class CmdSession extends AbstractCommand {
     }
 
     private void accept(CommandSender sender, String[] args) {
-
-        System.out.println(new PlaceholderAPIHook.PatchExpansion().onPlaceholderRequest(Bukkit.getPlayer("ExLocki"),Bukkit.getPlayer("i01"),"relationColor"));
-
         if (!hasPermission(sender, "session.accept")) {
             MsgUtil.msg(sender, PatchTestPlugin.getMsg("noPermission"));
             return;
